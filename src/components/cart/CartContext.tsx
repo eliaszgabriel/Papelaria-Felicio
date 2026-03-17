@@ -47,13 +47,15 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
+    if (!cartReady) return;
+
     try {
       localStorage.setItem(
         STORAGE_KEY,
         JSON.stringify(items.filter((item) => item.qty > 0)),
       );
     } catch {}
-  }, [items]);
+  }, [cartReady, items]);
 
   const addItem: CartContextType["addItem"] = (item, qty = 1) => {
     setItems((prev) => {
