@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname } from "next/navigation";
 import {
   useEffect,
   useMemo,
@@ -69,6 +69,47 @@ const mobileMenuItems = [
   },
   ...navItems.filter((item) => item.href !== "/conta"),
 ];
+
+function subscribeToLocationSearch(onStoreChange: () => void) {
+  if (typeof window === "undefined") return () => {};
+
+  const notify = () => onStoreChange();
+  const historyRef = window.history as History & {
+    __pfHeaderPatched?: boolean;
+  };
+
+  if (!historyRef.__pfHeaderPatched) {
+    const originalPushState = window.history.pushState.bind(window.history);
+    const originalReplaceState = window.history.replaceState.bind(window.history);
+
+    window.history.pushState = function pushState(...args) {
+      const result = originalPushState(...args);
+      window.dispatchEvent(new Event("pf:locationchange"));
+      return result;
+    };
+
+    window.history.replaceState = function replaceState(...args) {
+      const result = originalReplaceState(...args);
+      window.dispatchEvent(new Event("pf:locationchange"));
+      return result;
+    };
+
+    historyRef.__pfHeaderPatched = true;
+  }
+
+  window.addEventListener("popstate", notify);
+  window.addEventListener("pf:locationchange", notify);
+
+  return () => {
+    window.removeEventListener("popstate", notify);
+    window.removeEventListener("pf:locationchange", notify);
+  };
+}
+
+function getLocationSearchSnapshot() {
+  if (typeof window === "undefined") return "";
+  return window.location.search || "";
+}
 
 type SharedHeaderProps = {
   pathname: string;
@@ -630,7 +671,6 @@ function DesktopHeader({
 
 export default function Header() {
   const pathname = usePathname();
-  const liveSearchParams = useSearchParams();
   const { items, subtotal, removeItem, setQty, clear } = useCart();
 
   const [wishlistCount, setWishlistCount] = useState(0);
@@ -648,9 +688,14 @@ export default function Header() {
     () => true,
     () => false,
   );
+  const locationSearch = useSyncExternalStore(
+    subscribeToLocationSearch,
+    getLocationSearchSnapshot,
+    () => "",
+  );
   const searchParams = useMemo(
-    () => new URLSearchParams(liveSearchParams?.toString() || ""),
-    [liveSearchParams],
+    () => new URLSearchParams(locationSearch),
+    [locationSearch],
   );
 
   const cartCount = items.reduce((acc, it) => acc + it.qty, 0);
