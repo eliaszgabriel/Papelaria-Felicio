@@ -10,6 +10,15 @@ function toOrigin(value: string | null | undefined) {
   }
 }
 
+function getForwardedOrigin(req: Request) {
+  const proto = req.headers.get("x-forwarded-proto");
+  const host = req.headers.get("x-forwarded-host") || req.headers.get("host");
+
+  if (!proto || !host) return null;
+
+  return toOrigin(`${proto}://${host}`);
+}
+
 export function validateCsrfRequest(req: Request) {
   const method = req.method.toUpperCase();
   if (method === "GET" || method === "HEAD" || method === "OPTIONS") {
@@ -22,6 +31,11 @@ export function validateCsrfRequest(req: Request) {
   const siteUrlOrigin = toOrigin(process.env.SITE_URL || "");
   if (siteUrlOrigin) {
     allowedOrigins.add(siteUrlOrigin);
+  }
+
+  const forwardedOrigin = getForwardedOrigin(req);
+  if (forwardedOrigin) {
+    allowedOrigins.add(forwardedOrigin);
   }
 
   const origin = toOrigin(req.headers.get("origin"));
