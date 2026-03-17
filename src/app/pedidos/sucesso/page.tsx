@@ -233,15 +233,7 @@ export default async function PedidoSucesso({ searchParams }: Props) {
     order.paymentMethod === "card_mercadopago" ||
     order.paymentMethod === "card_stripe";
   const isAwaitingPayment = order.status === "aguardando_pagamento";
-  const mercadoPagoReturnStatus = String(sp.status || "").toLowerCase();
-  const cardReturnApproved =
-    (order.paymentMethod === "card_mercadopago" &&
-      mercadoPagoReturnStatus === "approved") ||
-    (order.paymentMethod === "card_stripe" &&
-      Boolean(stripeSessionId) &&
-      order.status === "pago");
-  const shouldClearCart =
-    (isPix && isAwaitingPayment) || (!isPix && cardReturnApproved);
+  const shouldClearCart = isPix && isAwaitingPayment;
   const headline =
     order.status === "pago"
       ? "Pagamento confirmado"
