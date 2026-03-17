@@ -31,7 +31,7 @@ export default function Hero() {
           <div>
             <div className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/75 px-4 py-2 text-xs font-semibold shadow-[0_10px_30px_rgba(0,0,0,0.05)]">
               <span className="h-2 w-2 rounded-full bg-felicio-pink" />
-              Curadoria delicada para volta às aulas
+              Curadoria delicada para presentear e organizar com carinho
             </div>
 
             <h1 className="mt-5 text-4xl font-extrabold leading-[0.95] tracking-tight sm:text-5xl lg:text-6xl">
@@ -88,11 +88,12 @@ export default function Hero() {
               <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-felicio-sun/22 via-felicio-pink/24 to-felicio-lilac/22 p-6">
                 <div className="pointer-events-none absolute inset-0">
                   <Image
-                    src="/a.png"
+                    src="/vitrine-semana.png"
                     alt=""
                     fill
-                    className="object-cover object-center opacity-[0.14] mix-blend-multiply"
+                    className="object-cover object-center opacity-[0.16] mix-blend-multiply"
                     sizes="(max-width: 1024px) 100vw, 520px"
+                    unoptimized
                   />
                   <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,251,248,0.74),rgba(255,255,255,0.28))]" />
                 </div>
@@ -148,7 +149,7 @@ export default function Hero() {
 
                 <div className="relative mt-6 rounded-[1.6rem] border border-white/80 bg-[linear-gradient(180deg,rgba(255,244,247,0.9),rgba(255,255,255,0.68))] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.72)]">
                   <div className="flex items-center justify-between text-sm font-semibold text-felicio-ink/85">
-                    <span>Selecao da semana</span>
+                    <span>Seleção da semana</span>
                     <span className="rounded-full border border-felicio-pink/20 bg-[linear-gradient(135deg,rgba(244,150,180,0.24),rgba(255,215,138,0.24))] px-3 py-1 text-xs font-extrabold uppercase tracking-[0.16em] text-felicio-ink/70">
                       Em alta
                     </span>
@@ -158,7 +159,7 @@ export default function Hero() {
                     {[
                       ["Destaques da loja", "/produtos?featured=1"],
                       ["Ofertas do momento", "/produtos?deal=1"],
-                      ["Volta às aulas", "/produtos?category=cadernos"],
+                      ["Cadernos delicados", "/produtos?category=cadernos"],
                       ["Presentes delicados", "/produtos?category=presentes"],
                     ].map(([label, href]) => (
                       <Link
@@ -171,13 +172,6 @@ export default function Hero() {
                     ))}
                   </div>
                 </div>
-              </div>
-
-              <div className="mt-4 flex items-center justify-between gap-4 text-xs text-felicio-ink/60">
-                <span>Navegação bonita, leve e mais útil para quem está comprando.</span>
-                <span className="rounded-full border border-white/70 bg-white/70 px-3 py-1 font-semibold">
-                  Curadoria em destaque
-                </span>
               </div>
             </div>
           </div>

@@ -27,10 +27,10 @@ const navItems = [
     isActive: (pathname: string) => pathname === "/",
   },
   {
-    label: "Volta as aulas",
-    href: "/produtos?category=cadernos",
+    label: "Ofertas",
+    href: "/produtos?sort=new&deal=1&page=1",
     isActive: (pathname: string, params: URLSearchParams) =>
-      pathname === "/produtos" && params.get("category") === "cadernos",
+      pathname === "/produtos" && params.get("deal") === "1",
   },
   {
     label: "Produtos",
