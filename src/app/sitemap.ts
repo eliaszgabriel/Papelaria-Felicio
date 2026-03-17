@@ -55,7 +55,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   if (hasPostgresConfig()) {
     const pool = getPostgresPool();
     const result = await pool.query<ProductSitemapRow>(
-      `SELECT slug, "updatedAt", active FROM products WHERE active = 1 ORDER BY "updatedAt" DESC`,
+      `SELECT slug, updatedat AS "updatedAt", active FROM products WHERE active = 1 ORDER BY updatedat DESC`,
     );
     products = result.rows;
   } else {
