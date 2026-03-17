@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Container from "@/components/layout/Container";
 
-export default function RedefinirSenhaPage() {
+function RedefinirSenhaPageContent() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token") || "";
   const [password, setPassword] = useState("");
@@ -133,5 +133,33 @@ export default function RedefinirSenhaPage() {
         </div>
       </Container>
     </main>
+  );
+}
+
+function RedefinirSenhaFallback() {
+  return (
+    <main>
+      <Container>
+        <div className="mx-auto max-w-xl pt-10 pb-16">
+          <div className="rounded-[30px] border border-white/70 bg-white/88 p-7 shadow-soft">
+            <div className="h-4 w-28 animate-pulse rounded-full bg-black/5" />
+            <div className="mt-4 h-9 w-52 animate-pulse rounded-2xl bg-black/5" />
+            <div className="mt-6 space-y-4">
+              <div className="h-12 animate-pulse rounded-2xl bg-black/5" />
+              <div className="h-12 animate-pulse rounded-2xl bg-black/5" />
+              <div className="h-12 animate-pulse rounded-2xl bg-black/5" />
+            </div>
+          </div>
+        </div>
+      </Container>
+    </main>
+  );
+}
+
+export default function RedefinirSenhaPage() {
+  return (
+    <Suspense fallback={<RedefinirSenhaFallback />}>
+      <RedefinirSenhaPageContent />
+    </Suspense>
   );
 }

@@ -1,11 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Container from "@/components/layout/Container";
 
-export default function VerificarEmailPage() {
+function VerificarEmailPageContent() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token") || "";
   const [loading, setLoading] = useState(true);
@@ -83,5 +83,29 @@ export default function VerificarEmailPage() {
         </div>
       </Container>
     </main>
+  );
+}
+
+function VerificarEmailFallback() {
+  return (
+    <main>
+      <Container>
+        <div className="mx-auto max-w-xl pt-10 pb-16">
+          <div className="rounded-[30px] border border-white/70 bg-white/88 p-7 shadow-soft">
+            <div className="h-4 w-32 animate-pulse rounded-full bg-black/5" />
+            <div className="mt-4 h-9 w-48 animate-pulse rounded-2xl bg-black/5" />
+            <div className="mt-6 h-12 animate-pulse rounded-2xl bg-black/5" />
+          </div>
+        </div>
+      </Container>
+    </main>
+  );
+}
+
+export default function VerificarEmailPage() {
+  return (
+    <Suspense fallback={<VerificarEmailFallback />}>
+      <VerificarEmailPageContent />
+    </Suspense>
   );
 }
