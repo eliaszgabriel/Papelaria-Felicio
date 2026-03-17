@@ -37,12 +37,12 @@ export async function saveOlistSyncCursor(page: number, offset: number) {
     const pool = getPostgresPool();
     await pool.query(
       `
-        INSERT INTO integration_cursors (id, page, "offset", "updatedAt")
+        INSERT INTO integration_cursors (id, page, "offset", updatedat)
         VALUES ($1, $2, $3, $4)
         ON CONFLICT(id) DO UPDATE SET
           page = excluded.page,
           "offset" = excluded."offset",
-          "updatedAt" = excluded."updatedAt"
+          updatedat = excluded.updatedat
       `,
       [CURSOR_ID, Math.max(1, page), Math.max(0, offset), now],
     );
