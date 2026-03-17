@@ -36,9 +36,9 @@ export async function sendPaidEmailIfNeeded(orderId: string) {
         id,
         status,
         total,
-        "customerEmail",
-        "customerJson",
-        "paidNotifiedAt"
+        customeremail AS "customerEmail",
+        customerjson AS "customerJson",
+        paidnotifiedat AS "paidNotifiedAt"
       FROM orders
       WHERE id = $1
       LIMIT 1
@@ -91,7 +91,7 @@ export async function sendPaidEmailIfNeeded(orderId: string) {
 
   if (hasPostgresConfig()) {
     const pool = getPostgresPool();
-    await pool.query(`UPDATE orders SET "paidNotifiedAt" = $1 WHERE id = $2`, [
+    await pool.query(`UPDATE orders SET paidnotifiedat = $1 WHERE id = $2`, [
       Date.now(),
       String(row.id),
     ]);

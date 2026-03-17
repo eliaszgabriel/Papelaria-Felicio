@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import Container from "./Container";
 
@@ -110,8 +111,26 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="pb-8 text-xs text-felicio-ink/60">
-          © {new Date().getFullYear()} Papelaria Felicio - feito com carinho.
+        <div className="flex flex-col gap-3 pb-8 pt-1 text-xs text-felicio-ink/60 sm:flex-row sm:items-center sm:justify-between">
+          <div>© {new Date().getFullYear()} Papelaria Felicio - feito com carinho.</div>
+
+          <a
+            href="https://eliasdev.site"
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-2 self-start rounded-full border border-white/75 bg-white/72 px-3 py-1.5 text-[11px] font-semibold text-felicio-ink/80 shadow-soft transition hover:bg-white"
+          >
+            <span>Desenvolvido por Elias</span>
+            <span className="inline-flex h-7 w-7 items-center justify-center overflow-hidden rounded-full border border-cyan-200/50 bg-[#071014] shadow-[0_0_18px_rgba(64,244,255,0.14)]">
+              <Image
+                src="/elias-mark.svg"
+                alt="Marca Elias"
+                width={28}
+                height={28}
+                className="h-5 w-5"
+              />
+            </span>
+          </a>
         </div>
       </Container>
     </footer>

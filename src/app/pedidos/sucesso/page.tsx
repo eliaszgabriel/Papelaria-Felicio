@@ -75,14 +75,14 @@ function StatusBadge({ status }: { status: string }) {
 
 function nextStepCopy(paymentMethod: string, status: string) {
   if (status === "pago") {
-    return "Pagamento confirmado. Agora a loja segue com a separacao e preparo do seu pedido.";
+    return "Pagamento confirmado. Agora a loja segue com a separação e preparo do seu pedido.";
   }
 
   if (paymentMethod === "card_mercadopago") {
-    return "Se o cartao ainda estiver aguardando, o retorno da aprovacao aparece por aqui assim que o pagamento confirmar.";
+    return "Se o cartão ainda estiver aguardando, o retorno da aprovação aparece por aqui assim que o pagamento confirmar.";
   }
 
-  return "Seu Pix ja esta pronto. Assim que o pagamento confirmar, a loja continua o preparo normalmente.";
+  return "Seu Pix já está pronto. Assim que o pagamento confirmar, a loja continua o preparo normalmente.";
 }
 
 export default async function PedidoSucesso({ searchParams }: Props) {
@@ -242,10 +242,10 @@ export default async function PedidoSucesso({ searchParams }: Props) {
         : "Pedido confirmado";
   const intro =
     order.status === "pago"
-      ? "Seu pagamento entrou certinho e agora voce pode acompanhar os proximos passos."
+      ? "Seu pagamento entrou certinho e agora você pode acompanhar os próximos passos."
       : isCard
-        ? "Seu pedido foi criado direitinho. Agora estamos aguardando a confirmacao final do pagamento."
-        : "Sua compra entrou direitinho e agora voce pode acompanhar os proximos passos.";
+        ? "Seu pedido foi criado direitinho. Agora estamos aguardando a confirmação final do pagamento."
+        : "Sua compra entrou direitinho e agora você pode acompanhar os próximos passos.";
 
   return (
     <main className="min-h-[72vh] py-8 sm:py-12">
@@ -343,7 +343,7 @@ export default async function PedidoSucesso({ searchParams }: Props) {
                           {order.address?.cep}
                         </>
                       ) : (
-                        "Endereco sera confirmado com a loja."
+                        "Endereço será confirmado com a loja."
                       )}
                     </div>
                   </div>
@@ -432,8 +432,8 @@ export default async function PedidoSucesso({ searchParams }: Props) {
                         <div className="mt-3 space-y-2 text-sm leading-relaxed text-felicio-ink/62">
                           <div>1. Seu pedido fica salvo na sua conta.</div>
                           <div>2. Assim que o pagamento confirmar, a loja continua o preparo.</div>
-                          <div>3. Quando houver atualizacao, voce consegue acompanhar pelo site.</div>
-                          <div>4. Se voce informou email, a loja tambem pode avisar por la.</div>
+                          <div>3. Quando houver atualização, você consegue acompanhar pelo site.</div>
+                          <div>4. Se você informou email, a loja também pode avisar por lá.</div>
                         </div>
                       </div>
                     </div>
@@ -470,13 +470,13 @@ export default async function PedidoSucesso({ searchParams }: Props) {
 
                 <div className="rounded-[26px] border border-black/6 bg-white/82 p-4 sm:p-5">
                   <div className="text-base font-extrabold text-felicio-ink">
-                    {isAwaitingPayment ? "Acompanhe por aqui" : "Proximos passos"}
+                    {isAwaitingPayment ? "Acompanhe por aqui" : "Próximos passos"}
                   </div>
 
                   <div className="mt-4 grid gap-2.5 sm:mt-5 sm:gap-3">
                     {isCard && isAwaitingPayment && (
                       <div className="rounded-[20px] border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold leading-relaxed text-amber-900">
-                        O pedido ja foi registrado. Se o cartao ainda nao aprovou, acompanhe esta tela ou seus pedidos para ver a atualizacao.
+                        O pedido já foi registrado. Se o cartão ainda não aprovou, acompanhe esta tela ou seus pedidos para ver a atualização.
                       </div>
                     )}
 

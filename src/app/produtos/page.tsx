@@ -201,6 +201,7 @@ function MenuSummary({ label }: { label: string }) {
 }
 
 function FiltersPanel({
+  allProductsCount,
   baseQuery,
   category,
   categoryCounts,
@@ -218,6 +219,7 @@ function FiltersPanel({
   visibleColors,
   visibleSubCategories,
 }: {
+  allProductsCount: number;
   baseQuery: Record<string, string>;
   category: string;
   categoryCounts: Map<string, number>;
@@ -244,7 +246,7 @@ function FiltersPanel({
         Encontre seu estilo
       </h2>
       <p className="mt-2 text-sm leading-6 text-felicio-ink/65">
-        Navegue pelas categorias da loja e va direto ao tipo de produto
+        Navegue pelas categorias da loja e vá direto ao tipo de produto
         que faz mais sentido para a sua compra.
       </p>
 
@@ -261,7 +263,7 @@ function FiltersPanel({
             })}`}
             active={!category && deal !== "1"}
             label="Todos os produtos"
-            count={Array.from(categoryCounts.values()).reduce((sum, value) => sum + value, 0)}
+            count={allProductsCount}
           />
 
           <Link
@@ -481,7 +483,7 @@ export default async function ProdutosPage({
     }),
   );
 
-  const [prod, filterUniverse] = await Promise.all([
+  const [prod, filterUniverse, allProductsResponse] = await Promise.all([
     getProducts(
       buildQuery({
         category,
@@ -504,11 +506,20 @@ export default async function ProdutosPage({
         offset: "0",
       }),
     ),
+    getProducts(
+      buildQuery({
+        q,
+        sort,
+        limit: "1",
+        offset: "0",
+      }),
+    ),
   ]);
 
   const items = Array.isArray(prod?.items) ? prod.items : [];
   const filterItems = Array.isArray(filterUniverse?.items) ? filterUniverse.items : [];
   const total = Number(prod?.total ?? 0);
+  const allProductsCount = Number(allProductsResponse?.total ?? total);
 
   const totalPages = Math.max(Math.ceil(total / pageSize), 1);
   const canPrev = page > 1;
@@ -537,6 +548,7 @@ export default async function ProdutosPage({
             <div className="mt-3">
               <aside className="h-fit rounded-[2rem] border border-white/70 bg-white/72 p-5 shadow-[0_18px_50px_rgba(0,0,0,0.06)] backdrop-blur-xl">
                 <FiltersPanel
+                  allProductsCount={allProductsCount}
                   baseQuery={baseQuery}
                   category={category}
                   categoryCounts={categoryCounts}
@@ -560,6 +572,7 @@ export default async function ProdutosPage({
 
           <aside className="hidden h-fit rounded-[2rem] border border-white/70 bg-white/72 p-5 shadow-[0_18px_50px_rgba(0,0,0,0.06)] backdrop-blur-xl lg:sticky lg:top-28 lg:block">
             <FiltersPanel
+              allProductsCount={allProductsCount}
               baseQuery={baseQuery}
               category={category}
               categoryCounts={categoryCounts}
