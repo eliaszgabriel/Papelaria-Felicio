@@ -81,7 +81,7 @@ export default async function HomeCategoryStrip() {
               Compre por categoria
             </h2>
             <p className="mt-3 text-sm leading-6 text-felicio-ink/65">
-              Um atalho rapido para quem ja sabe o estilo de produto que quer
+              Um atalho rápido para quem já sabe o estilo de produto que quer
               explorar.
             </p>
           </div>

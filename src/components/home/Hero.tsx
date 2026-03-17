@@ -4,6 +4,24 @@ import Container from "../layout/Container";
 import Button from "../ui/Button";
 
 export default function Hero() {
+  const spotlightCards = [
+    {
+      label: "Canetas",
+      href: "/produtos?category=canetas",
+      image: "/b.png",
+    },
+    {
+      label: "Cadernos",
+      href: "/produtos?category=cadernos",
+      image: "/c.png",
+    },
+    {
+      label: "Presentes",
+      href: "/produtos?category=presentes",
+      image: "/e.png",
+    },
+  ];
+
   return (
     <section className="relative overflow-hidden">
       <div className="pointer-events-none absolute inset-x-0 top-0 h-[32rem] bg-[radial-gradient(circle_at_top_left,rgba(244,150,180,0.10),transparent_34%),radial-gradient(circle_at_top_right,rgba(191,168,255,0.09),transparent_34%),radial-gradient(circle_at_50%_24%,rgba(255,215,138,0.08),transparent_26%)]" />
@@ -13,7 +31,7 @@ export default function Hero() {
           <div>
             <div className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/75 px-4 py-2 text-xs font-semibold shadow-[0_10px_30px_rgba(0,0,0,0.05)]">
               <span className="h-2 w-2 rounded-full bg-felicio-pink" />
-              Curadoria delicada para volta as aulas
+              Curadoria delicada para volta às aulas
             </div>
 
             <h1 className="mt-5 text-4xl font-extrabold leading-[0.95] tracking-tight sm:text-5xl lg:text-6xl">
@@ -25,8 +43,8 @@ export default function Hero() {
             </h1>
 
             <p className="mt-4 max-w-xl text-base text-felicio-ink/80 sm:text-lg">
-              Produtos fofos, presentes delicados e uma navegacao mais gostosa
-              para transformar compra rapida em experiencia especial.
+              Produtos fofos, presentes delicados e uma navegação mais gostosa
+              para transformar compra rápida em experiência especial.
             </p>
 
             <div className="mt-7 flex flex-wrap items-center gap-3">
@@ -44,7 +62,7 @@ export default function Hero() {
 
             <div className="mt-8 grid max-w-xl grid-cols-3 gap-3">
               {[
-                ["Pix", "Confirmacao automatica"],
+                ["Pix", "Confirmação automática"],
                 ["Estoque", "Atualizado no pedido"],
                 ["Curadoria", "Mais leve e premium"],
               ].map(([title, text]) => (
@@ -90,7 +108,7 @@ export default function Hero() {
                       da sua compra.
                     </div>
                     <div className="mt-2 max-w-md text-sm text-felicio-ink/75">
-                      Tudo o que aparece aqui leva para uma selecao real da loja.
+                      Tudo o que aparece aqui leva para uma seleção real da loja.
                     </div>
                   </div>
 
@@ -103,20 +121,27 @@ export default function Hero() {
                 </div>
 
                 <div className="relative mt-6 grid grid-cols-3 gap-3">
-                  {[
-                    ["Canetas", "/produtos?category=canetas"],
-                    ["Cadernos", "/produtos?category=cadernos"],
-                    ["Presentes", "/produtos?category=presentes"],
-                  ].map(([label, href], index) => (
+                  {spotlightCards.map((item, index) => (
                     <Link
-                      key={label}
-                      href={href}
+                      key={item.label}
+                      href={item.href}
                       className={[
-                        "rounded-2xl border border-white/80 bg-[linear-gradient(135deg,rgba(255,255,255,0.94),rgba(252,241,244,0.88))] p-3 text-center text-sm font-semibold text-felicio-ink/78 shadow-[0_14px_35px_rgba(255,255,255,0.20)] transition hover:-translate-y-1 hover:bg-white",
+                        "group relative overflow-hidden rounded-2xl border border-white/80 bg-[linear-gradient(135deg,rgba(255,255,255,0.94),rgba(252,241,244,0.88))] p-3 text-center text-sm font-semibold text-felicio-ink/78 shadow-[0_14px_35px_rgba(255,255,255,0.20)] transition hover:-translate-y-1 hover:bg-white",
                         index === 1 ? "translate-y-4" : "",
                       ].join(" ")}
                     >
-                      {label}
+                      <div className="relative overflow-hidden rounded-[1rem]">
+                        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.12),rgba(255,255,255,0.45))]" />
+                        <Image
+                          src={item.image}
+                          alt={item.label}
+                          width={220}
+                          height={160}
+                          className="h-20 w-full object-cover transition duration-500 group-hover:scale-105"
+                          unoptimized
+                        />
+                      </div>
+                      <div className="mt-3">{item.label}</div>
                     </Link>
                   ))}
                 </div>
@@ -133,7 +158,7 @@ export default function Hero() {
                     {[
                       ["Destaques da loja", "/produtos?featured=1"],
                       ["Ofertas do momento", "/produtos?deal=1"],
-                      ["Volta as aulas", "/produtos?category=cadernos"],
+                      ["Volta às aulas", "/produtos?category=cadernos"],
                       ["Presentes delicados", "/produtos?category=presentes"],
                     ].map(([label, href]) => (
                       <Link
@@ -149,7 +174,7 @@ export default function Hero() {
               </div>
 
               <div className="mt-4 flex items-center justify-between gap-4 text-xs text-felicio-ink/60">
-                <span>Navegacao bonita, leve e mais util para quem esta comprando.</span>
+                <span>Navegação bonita, leve e mais útil para quem está comprando.</span>
                 <span className="rounded-full border border-white/70 bg-white/70 px-3 py-1 font-semibold">
                   Curadoria em destaque
                 </span>

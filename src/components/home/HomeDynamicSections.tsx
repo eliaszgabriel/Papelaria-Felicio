@@ -3,7 +3,10 @@ import Container from "@/components/layout/Container";
 import ProductCard from "@/components/product/ProductCard";
 import AnimatedProductRail from "@/components/home/AnimatedProductRail";
 import HomeCategoryStrip from "@/components/home/HomeCategoryStrip";
-import { getInternalJsonFetchOptions, getInternalSiteUrl } from "@/lib/siteUrl";
+import {
+  getInternalJsonFetchOptions,
+  getInternalSiteUrl,
+} from "@/lib/siteUrl";
 
 export const dynamic = "force-dynamic";
 
@@ -32,11 +35,14 @@ async function getHomeProducts(query: string) {
     `${base}/api/products?${query}`,
     getInternalJsonFetchOptions(),
   );
+
   if (!res.ok) return { items: [] } satisfies HomeProductsResponse;
+
   const contentType = res.headers.get("content-type") || "";
   if (!contentType.includes("application/json")) {
     return { items: [] } satisfies HomeProductsResponse;
   }
+
   return (await res.json()) as HomeProductsResponse;
 }
 
@@ -51,7 +57,7 @@ function mapToCard(p: HomeProduct) {
       p.coverImage || (Array.isArray(p.images) ? p.images[0]?.url : "") || "",
     stock: Number(p.stock ?? 0),
     badges: [
-      Number(p.isCollection ?? 0) === 1 ? "Colecao" : "",
+      Number(p.isCollection ?? 0) === 1 ? "Coleção" : "",
       Number(p.isWeeklyFavorite ?? 0) === 1 ? "Favoritos da semana" : "",
     ].filter(Boolean),
   };
@@ -91,7 +97,10 @@ function Section({
 
       <div className="mt-4 grid grid-cols-3 gap-2.5 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4">
         {items.map((p) => (
-          <div key={p.id} className="w-full min-w-0 max-w-[300px] justify-self-stretch sm:justify-self-start">
+          <div
+            key={p.id}
+            className="w-full min-w-0 max-w-[300px] justify-self-stretch sm:justify-self-start"
+          >
             <ProductCard product={mapToCard(p)} compact />
           </div>
         ))}

@@ -30,8 +30,8 @@ export default function AnimatedProductRail({
             Produtos passeando pela papelaria
           </h2>
           <p className="mt-2 max-w-2xl text-sm text-felicio-ink/65 sm:text-base">
-            Uma selecao leve de produtos para inspirar a compra e destacar o
-            que esta mais bonito na vitrine.
+            Uma seleção leve de produtos para inspirar a compra e destacar o
+            que está mais bonito na vitrine.
           </p>
         </div>
       </div>

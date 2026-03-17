@@ -46,7 +46,7 @@ export default function ProductCard({
   const stockLabel = outOfStock
     ? "Sem estoque no momento"
     : stockCount <= 5
-      ? `Ultimas ${stockCount} unidades`
+      ? `Últimas ${stockCount} unidades`
       : `Em estoque: ${stockCount}`;
   const badges = Array.isArray(product.badges)
     ? product.badges.filter(Boolean).slice(0, 2)
@@ -131,23 +131,32 @@ export default function ProductCard({
         {badges.length > 0 && (
           <div className="mb-1.5 flex flex-wrap items-center gap-1 text-[9px] font-extrabold uppercase tracking-[0.14em] text-felicio-ink/45 sm:mb-3 sm:gap-2 sm:text-[11px] sm:tracking-[0.18em]">
             {badges.map((badge) => (
-              <span
-                key={badge}
-                className="rounded-full bg-white/85 px-2 py-1"
-              >
+              <span key={badge} className="rounded-full bg-white/85 px-2 py-1">
                 {badge}
               </span>
             ))}
           </div>
         )}
 
-        <h3 className={compact ? "text-[11px] font-extrabold leading-snug text-felicio-ink sm:text-[15px]" : "text-base font-extrabold leading-snug text-felicio-ink"}>
+        <h3
+          className={
+            compact
+              ? "text-[11px] font-extrabold leading-snug text-felicio-ink sm:text-[15px]"
+              : "text-base font-extrabold leading-snug text-felicio-ink"
+          }
+        >
           {product.title}
         </h3>
 
         <div className="mt-2 flex items-end justify-between gap-2 sm:mt-3 sm:gap-3">
           <div>
-            <div className={compact ? "text-[0.82rem] font-extrabold sm:text-[1.05rem]" : "text-lg font-extrabold"}>
+            <div
+              className={
+                compact
+                  ? "text-[0.82rem] font-extrabold sm:text-[1.05rem]"
+                  : "text-lg font-extrabold"
+              }
+            >
               {formatBRL(Number(product.price || 0))}
             </div>
 
@@ -167,7 +176,9 @@ export default function ProductCard({
               <Button
                 className={[
                   "shadow-[0_12px_30px_rgba(244,150,180,0.25)] transition duration-300 group-hover:shadow-[0_16px_34px_rgba(244,150,180,0.34)]",
-                  compact ? "px-2 py-1.5 text-[10px] sm:px-3 sm:py-2 sm:text-xs" : "px-4 py-2 text-sm",
+                  compact
+                    ? "px-2 py-1.5 text-[10px] sm:px-3 sm:py-2 sm:text-xs"
+                    : "px-4 py-2 text-sm",
                 ].join(" ")}
                 disabled={outOfStock}
               >
