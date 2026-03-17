@@ -2,7 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import ProductGallery from "./_ui/ProductGallery";
 import ProductInfo from "./_ui/ProductInfo";
-import { getInternalSiteUrl, getSiteUrl } from "@/lib/siteUrl";
+import {
+  getInternalJsonFetchOptions,
+  getInternalSiteUrl,
+  getSiteUrl,
+} from "@/lib/siteUrl";
 
 export const dynamic = "force-dynamic";
 
@@ -29,9 +33,10 @@ type ProductResponse = {
 
 async function getProduct(slug: string): Promise<ProductResponse | null> {
   const base = getInternalSiteUrl();
-  const res = await fetch(`${base}/api/products/${encodeURIComponent(slug)}`, {
-    cache: "no-store",
-  });
+  const res = await fetch(
+    `${base}/api/products/${encodeURIComponent(slug)}`,
+    getInternalJsonFetchOptions(),
+  );
 
   if (!res.ok) {
     return null;

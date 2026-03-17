@@ -2,7 +2,7 @@ import Link from "next/link";
 import Container from "@/components/layout/Container";
 import ProductCard from "@/components/product/ProductCard";
 import { COLOR_OPTIONS, SUBCATEGORY_OPTIONS } from "@/lib/catalog";
-import { getInternalSiteUrl } from "@/lib/siteUrl";
+import { getInternalJsonFetchOptions, getInternalSiteUrl } from "@/lib/siteUrl";
 
 export const dynamic = "force-dynamic";
 
@@ -37,7 +37,7 @@ type ProductsResponse = {
 
 async function getCategories() {
   const base = getInternalSiteUrl();
-  const res = await fetch(`${base}/api/categories`, { cache: "no-store" });
+  const res = await fetch(`${base}/api/categories`, getInternalJsonFetchOptions());
   if (!res.ok) return { items: [] } satisfies CategoriesResponse;
   const contentType = res.headers.get("content-type") || "";
   if (!contentType.includes("application/json")) {
@@ -49,7 +49,10 @@ async function getCategories() {
 async function getProducts(query?: string) {
   const base = getInternalSiteUrl();
   const qs = query ? `?${query}` : "";
-  const res = await fetch(`${base}/api/products${qs}`, { cache: "no-store" });
+  const res = await fetch(
+    `${base}/api/products${qs}`,
+    getInternalJsonFetchOptions(),
+  );
   if (!res.ok) return { items: [], total: 0 } satisfies ProductsResponse;
   const contentType = res.headers.get("content-type") || "";
   if (!contentType.includes("application/json")) {

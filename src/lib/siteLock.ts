@@ -1,4 +1,5 @@
 const SITE_LOCK_COOKIE = "pf_site_lock";
+const SITE_LOCK_BYPASS_HEADER = "x-pf-site-lock-bypass";
 
 function getSiteLockSecret() {
   return (
@@ -8,6 +9,14 @@ function getSiteLockSecret() {
     process.env.SITE_LOCK_PASSWORD ||
     "pf-site-lock"
   );
+}
+
+export function getSiteLockBypassHeaderName() {
+  return SITE_LOCK_BYPASS_HEADER;
+}
+
+export function getSiteLockBypassHeaderValue() {
+  return getSiteLockSecret();
 }
 
 async function sha256(input: string) {

@@ -1,6 +1,8 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import {
+  getSiteLockBypassHeaderName,
+  getSiteLockBypassHeaderValue,
   getSiteLockCookieName,
   isSiteLockEnabled,
   verifySiteLockToken,
@@ -12,6 +14,7 @@ function isPublicPath(pathname: string) {
     pathname.startsWith("/favicon") ||
     pathname.startsWith("/site-lock") ||
     pathname.startsWith("/api/site-lock") ||
+    pathname.startsWith("/api/health") ||
     pathname.startsWith("/api/webhooks/") ||
     pathname.startsWith("/api/cron/") ||
     pathname === "/robots.txt" ||
@@ -31,6 +34,11 @@ export async function middleware(req: NextRequest) {
 
   const { pathname, search } = req.nextUrl;
   if (isPublicPath(pathname)) {
+    return NextResponse.next();
+  }
+
+  const bypassHeader = req.headers.get(getSiteLockBypassHeaderName());
+  if (bypassHeader && bypassHeader === getSiteLockBypassHeaderValue()) {
     return NextResponse.next();
   }
 

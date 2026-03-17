@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { getInternalSiteUrl } from "@/lib/siteUrl";
+import { getInternalJsonFetchOptions, getInternalSiteUrl } from "@/lib/siteUrl";
 
 type Category = {
   id: string | number;
@@ -22,7 +22,7 @@ type ProductsResponse = {
 
 async function getCategories() {
   const base = getInternalSiteUrl();
-  const res = await fetch(`${base}/api/categories`, { cache: "no-store" });
+  const res = await fetch(`${base}/api/categories`, getInternalJsonFetchOptions());
   if (!res.ok) return { items: [] } satisfies CategoriesResponse;
   const contentType = res.headers.get("content-type") || "";
   if (!contentType.includes("application/json")) {
@@ -35,7 +35,7 @@ async function getCoverForCategory(categoryId: string) {
   const base = getInternalSiteUrl();
   const res = await fetch(
     `${base}/api/products?category=${encodeURIComponent(categoryId)}&limit=1`,
-    { cache: "no-store" },
+    getInternalJsonFetchOptions(),
   );
 
   if (!res.ok) return null;

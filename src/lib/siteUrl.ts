@@ -1,3 +1,8 @@
+import {
+  getSiteLockBypassHeaderName,
+  getSiteLockBypassHeaderValue,
+} from "@/lib/siteLock";
+
 export function getSiteUrl() {
   return (process.env.SITE_URL || "http://localhost:3000").replace(/\/+$/, "");
 }
@@ -11,4 +16,13 @@ export function getInternalSiteUrl() {
       : process.env.SITE_URL || "http://localhost:3000");
 
   return internalSiteUrl.replace(/\/+$/, "");
+}
+
+export function getInternalJsonFetchOptions(): RequestInit {
+  return {
+    cache: "no-store",
+    headers: {
+      [getSiteLockBypassHeaderName()]: getSiteLockBypassHeaderValue(),
+    },
+  };
 }
