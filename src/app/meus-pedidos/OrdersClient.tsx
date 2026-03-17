@@ -53,7 +53,7 @@ function getStatusUI(status: OrderListItem["status"]) {
 
 export default function OrdersClient() {
   const [orders, setOrders] = useState<OrderListItem[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [needsLoginOrToken, setNeedsLoginOrToken] = useState(false);
 
@@ -131,7 +131,35 @@ export default function OrdersClient() {
           )}
 
           {loading && (
-            <p className="mt-4 text-sm text-felicio-ink/60">Carregando...</p>
+            <div className="mt-6 grid grid-cols-1 gap-3 sm:mt-8 sm:gap-4 xl:grid-cols-2">
+              {Array.from({ length: 4 }).map((_, index) => (
+                <div
+                  key={`orders-skeleton-${index}`}
+                  className="rounded-[28px] border border-white/70 bg-white/80 p-4 shadow-[0_20px_60px_rgba(0,0,0,0.05)] sm:p-6"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      <div className="h-3 w-16 animate-pulse rounded-full bg-black/5" />
+                      <div className="mt-3 h-5 w-40 animate-pulse rounded-xl bg-black/6" />
+                      <div className="mt-2 h-3 w-28 animate-pulse rounded-full bg-black/5" />
+                    </div>
+                    <div className="h-7 w-28 animate-pulse rounded-full bg-black/5" />
+                  </div>
+
+                  <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    <div className="rounded-2xl border border-black/5 bg-white/90 p-4">
+                      <div className="h-3 w-12 animate-pulse rounded-full bg-black/5" />
+                      <div className="mt-3 h-6 w-24 animate-pulse rounded-xl bg-black/6" />
+                    </div>
+                    <div className="rounded-2xl border border-black/5 bg-white/90 p-4">
+                      <div className="h-3 w-24 animate-pulse rounded-full bg-black/5" />
+                      <div className="mt-3 h-4 w-32 animate-pulse rounded-xl bg-black/6" />
+                      <div className="mt-2 h-3 w-24 animate-pulse rounded-full bg-black/5" />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           )}
           {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
 
@@ -191,7 +219,7 @@ export default function OrdersClient() {
             </div>
           </div>
 
-          {orders.length === 0 ? (
+          {!loading && orders.length === 0 ? (
             <div className="mt-6 rounded-3xl border border-white/60 bg-white/75 p-5 shadow-soft sm:mt-8 sm:p-8">
               <p className="text-felicio-ink/80">
                 Ainda nao ha pedidos por aqui. Quando voce finalizar um pedido,
@@ -204,7 +232,7 @@ export default function OrdersClient() {
                 Ver produtos
               </Link>
             </div>
-          ) : (
+          ) : !loading ? (
             <div className="mt-6 grid grid-cols-1 gap-3 sm:mt-8 sm:gap-4 xl:grid-cols-2">
               {orders.map((order) => (
                 <Link
@@ -259,7 +287,7 @@ export default function OrdersClient() {
                 </Link>
               ))}
             </div>
-          )}
+          ) : null}
         </div>
       </Container>
     </main>

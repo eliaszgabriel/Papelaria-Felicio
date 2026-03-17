@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import {
   useEffect,
   useMemo,
@@ -630,6 +630,7 @@ function DesktopHeader({
 
 export default function Header() {
   const pathname = usePathname();
+  const liveSearchParams = useSearchParams();
   const { items, subtotal, removeItem, setQty, clear } = useCart();
 
   const [wishlistCount, setWishlistCount] = useState(0);
@@ -647,13 +648,10 @@ export default function Header() {
     () => true,
     () => false,
   );
-  const searchParams = useMemo(() => {
-    if (!hydrated || typeof window === "undefined") {
-      return new URLSearchParams();
-    }
-
-    return new URLSearchParams(window.location.search);
-  }, [hydrated]);
+  const searchParams = useMemo(
+    () => new URLSearchParams(liveSearchParams?.toString() || ""),
+    [liveSearchParams],
+  );
 
   const cartCount = items.reduce((acc, it) => acc + it.qty, 0);
   const firstName = useMemo(

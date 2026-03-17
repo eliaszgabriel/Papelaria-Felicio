@@ -831,20 +831,20 @@ function ContaPageContent() {
     "rounded-[22px] border border-white/55 bg-[linear-gradient(180deg,rgba(255,255,255,0.64),rgba(255,255,255,0.50))] shadow-[0_12px_30px_rgba(0,0,0,0.05)] backdrop-blur-md";
 
   const btnAccent =
-    "rounded-2xl px-5 py-3 font-semibold text-white " +
+    "cursor-pointer rounded-2xl px-5 py-3 font-semibold text-white " +
     "bg-[#F3A6B6] hover:bg-[#EC93A6] transition " +
     "shadow-[0_12px_32px_rgba(243,166,182,0.45)] " +
     "hover:-translate-y-[1px] active:translate-y-0 " +
     "focus:outline-none focus:ring-2 focus:ring-[#F3A6B6]/40";
 
   const btnOutline =
-    "rounded-2xl px-4 py-2 font-semibold text-[#9C3F5B] " +
+    "cursor-pointer rounded-2xl px-4 py-2 font-semibold text-[#9C3F5B] " +
     "border border-white/60 bg-white/62 " +
     "hover:bg-white/78 transition " +
     "shadow-[0_10px_22px_rgba(0,0,0,0.06)]";
 
   const navItemBase =
-    "w-full flex items-center justify-between gap-3 rounded-2xl px-3 py-2.5 text-sm font-semibold transition sm:px-4 sm:py-3";
+    "w-full cursor-pointer flex items-center justify-between gap-3 rounded-2xl px-3 py-2.5 text-sm font-semibold transition sm:px-4 sm:py-3";
   const navItemOn =
     "border border-white/70 bg-white/78 text-[#1F1F1F] shadow-[0_10px_24px_rgba(0,0,0,0.05)]";
   const navItemOff =
@@ -911,7 +911,7 @@ function ContaPageContent() {
               {me && (
                 <button
                   onClick={onLogout}
-                  className="rounded-2xl px-4 py-2 border border-black/10 bg-white/50 hover:bg-[#FFFBF9] transition shadow-[0_10px_24px_rgba(0,0,0,0.06)] text-sm font-semibold text-black/70"
+                  className="cursor-pointer rounded-2xl px-4 py-2 border border-black/10 bg-white/50 hover:bg-[#FFFBF9] transition shadow-[0_10px_24px_rgba(0,0,0,0.06)] text-sm font-semibold text-black/70"
                 >
                   Sair
                 </button>
@@ -1042,7 +1042,7 @@ function ContaPageContent() {
 
                     <button
                       onClick={onLogout}
-                      className="mt-3 w-full rounded-2xl px-4 py-3 text-sm font-semibold border border-black/10 bg-white/55 hover:bg-white transition"
+                      className="mt-3 w-full cursor-pointer rounded-2xl px-4 py-3 text-sm font-semibold border border-black/10 bg-white/55 hover:bg-white transition"
                     >
                       Sair
                     </button>
@@ -1093,7 +1093,7 @@ function ContaPageContent() {
 
                             <button
                               onClick={() => setTab("profile")}
-                              className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-[#9C3F5B]"
+                              className="mt-4 inline-flex cursor-pointer items-center gap-2 text-sm font-semibold text-[#9C3F5B]"
                             >
                               Editar dados <span>→</span>
                             </button>
@@ -1109,7 +1109,7 @@ function ContaPageContent() {
                             </p>
                             <button
                               onClick={() => setTab("addresses")}
-                              className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-[#9C3F5B]"
+                              className="mt-4 inline-flex cursor-pointer items-center gap-2 text-sm font-semibold text-[#9C3F5B]"
                             >
                               Ver endereços <span>→</span>
                             </button>
@@ -1119,7 +1119,7 @@ function ContaPageContent() {
                         <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
                           <Link
                             href="/meus-pedidos"
-                            className="rounded-[22px] border border-black/5 bg-[#FFFCFA] p-6 shadow-[0_12px_34px_rgba(0,0,0,0.06)] hover:shadow-[0_16px_42px_rgba(0,0,0,0.08)] transition"
+                            className="cursor-pointer rounded-[22px] border border-black/5 bg-[#FFFCFA] p-6 shadow-[0_12px_34px_rgba(0,0,0,0.06)] hover:shadow-[0_16px_42px_rgba(0,0,0,0.08)] transition"
                           >
                             <div className="text-sm font-semibold text-[#1F1F1F]">
                               Meus pedidos
@@ -1134,7 +1134,7 @@ function ContaPageContent() {
 
                           <a
                             href="mailto:suporte@papelariafelicio.com"
-                            className="rounded-[22px] border border-black/5 bg-[#FFFCFA] p-6 shadow-[0_12px_34px_rgba(0,0,0,0.06)] hover:shadow-[0_16px_42px_rgba(0,0,0,0.08)] transition"
+                            className="cursor-pointer rounded-[22px] border border-black/5 bg-[#FFFCFA] p-6 shadow-[0_12px_34px_rgba(0,0,0,0.06)] hover:shadow-[0_16px_42px_rgba(0,0,0,0.08)] transition"
                           >
                             <div className="text-sm font-semibold text-[#1F1F1F]">
                               Suporte
@@ -1746,7 +1746,7 @@ function ContaPageContent() {
                         type="button"
                         onClick={handleRequestPasswordReset}
                         disabled={resetSending}
-                        className="text-left text-sm font-semibold text-[#9C3F5B] underline underline-offset-4 disabled:cursor-not-allowed disabled:opacity-60"
+                        className="cursor-pointer text-left text-sm font-semibold text-[#9C3F5B] underline underline-offset-4 disabled:cursor-not-allowed disabled:opacity-60"
                       >
                         {resetSending ? "Enviando link..." : "Esqueci minha senha"}
                       </button>
@@ -1755,7 +1755,7 @@ function ContaPageContent() {
                         type="button"
                         onClick={handleResendVerificationEmail}
                         disabled={resetSending}
-                        className="text-left text-sm font-semibold text-[#9C3F5B] underline underline-offset-4 disabled:cursor-not-allowed disabled:opacity-60"
+                        className="cursor-pointer text-left text-sm font-semibold text-[#9C3F5B] underline underline-offset-4 disabled:cursor-not-allowed disabled:opacity-60"
                       >
                         {resetSending ? "Enviando..." : "Reenviar verificação de email"}
                       </button>

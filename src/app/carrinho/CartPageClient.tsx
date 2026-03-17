@@ -16,7 +16,8 @@ function formatBRL(value: number) {
 }
 
 export default function CartPageClient() {
-  const { items, itemsCount, subtotal, removeItem, setQty, clear } = useCart();
+  const { items, itemsCount, subtotal, removeItem, setQty, clear, cartReady } =
+    useCart();
 
   // Estados de frete
   const [shippingCep, setShippingCep] = useState("");
@@ -27,7 +28,7 @@ export default function CartPageClient() {
     deadline: string;
   }>(null);
 
-  const isEmpty = itemsCount === 0;
+  const isEmpty = cartReady && itemsCount === 0;
   const shippingPrice = shippingResult?.price || 0;
   const total = subtotal + shippingPrice;
 
@@ -80,7 +81,7 @@ export default function CartPageClient() {
               </p>
             </div>
 
-            {!isEmpty && (
+            {cartReady && !isEmpty && (
               <button
                 onClick={clear}
                 className="text-sm font-semibold text-felicio-ink/70 hover:text-felicio-ink underline underline-offset-4"
@@ -90,8 +91,57 @@ export default function CartPageClient() {
             )}
           </div>
 
-          {/* estado vazio */}
-          {isEmpty ? (
+          {!cartReady ? (
+            <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-12">
+              <div className="lg:col-span-8">
+                <div className="rounded-3xl border border-white/60 bg-white/70 backdrop-blur-sm shadow-soft overflow-hidden">
+                  <div className="px-6 py-4 border-b border-black/5">
+                    <div className="h-4 w-24 animate-pulse rounded-full bg-black/5" />
+                  </div>
+
+                  <div className="p-4 sm:p-6 space-y-3">
+                    {Array.from({ length: 3 }).map((_, index) => (
+                      <div
+                        key={`cart-skeleton-${index}`}
+                        className="rounded-2xl border border-black/5 bg-white p-4 shadow-[0_10px_30px_rgba(0,0,0,0.06)]"
+                      >
+                        <div className="flex flex-col gap-4 sm:flex-row">
+                          <div className="h-20 w-20 rounded-2xl bg-black/5 shrink-0 animate-pulse" />
+
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-start justify-between gap-4">
+                              <div className="min-w-0">
+                                <div className="h-4 w-40 animate-pulse rounded-xl bg-black/6" />
+                                <div className="mt-2 h-3 w-20 animate-pulse rounded-full bg-black/5" />
+                              </div>
+
+                              <div className="h-3 w-16 animate-pulse rounded-full bg-black/5" />
+                            </div>
+
+                            <div className="mt-4 flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center sm:gap-4">
+                              <div className="h-9 w-28 animate-pulse rounded-full bg-black/5" />
+                              <div className="h-4 w-24 animate-pulse rounded-xl bg-black/6" />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="lg:col-span-4">
+                <div className="rounded-3xl border border-white/60 bg-white/70 backdrop-blur-sm shadow-soft p-6">
+                  <div className="h-5 w-24 animate-pulse rounded-xl bg-black/6" />
+                  <div className="mt-4 space-y-3">
+                    <div className="h-24 animate-pulse rounded-2xl bg-black/5" />
+                    <div className="h-36 animate-pulse rounded-2xl bg-black/5" />
+                    <div className="h-12 animate-pulse rounded-full bg-black/6" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : isEmpty ? (
             <div className="mt-8 rounded-3xl border border-white/60 bg-white/70 backdrop-blur-sm shadow-soft p-8">
               <p className="text-felicio-ink/80">
                 Seu carrinho está vazio. Bora escolher algo fofo? ✨
