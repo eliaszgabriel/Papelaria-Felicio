@@ -314,7 +314,7 @@ function ContaPageContent() {
         : await apiLogin({ email, password: loginPassword });
 
     if (!payload?.ok) {
-      setError(payload?.reason || "Erro.");
+      setError(payload?.reason || payload?.error || "Erro.");
       return;
     }
 

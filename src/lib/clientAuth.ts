@@ -1,5 +1,21 @@
 import { emitAuthStateChanged } from "@/lib/authEvents";
 
+async function parseApiResponse(res: Response) {
+  const contentType = res.headers.get("content-type") || "";
+
+  if (contentType.includes("application/json")) {
+    return res.json().catch(() => ({ ok: false, reason: "Resposta invalida do servidor." }));
+  }
+
+  const text = await res.text().catch(() => "");
+  return {
+    ok: false,
+    reason: text.includes("<!DOCTYPE") || text.includes("<html")
+      ? "Resposta invalida do servidor. Recarregue a pagina e tente novamente."
+      : text || "Resposta invalida do servidor.",
+  };
+}
+
 export type MeUser = {
   id: number;
   email: string;
@@ -27,7 +43,7 @@ export async function apiRegister(input: {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(input),
   });
-  return res.json();
+  return parseApiResponse(res);
 }
 
 export async function apiLogin(input: { email: string; password: string }) {
@@ -36,7 +52,7 @@ export async function apiLogin(input: { email: string; password: string }) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(input),
   });
-  const data = await res.json();
+  const data = await parseApiResponse(res);
   if (res.ok && data?.ok) {
     emitAuthStateChanged();
   }
@@ -45,7 +61,7 @@ export async function apiLogin(input: { email: string; password: string }) {
 
 export async function apiLogout() {
   const res = await fetch("/api/auth/logout", { method: "POST" });
-  const data = await res.json();
+  const data = await parseApiResponse(res);
   if (res.ok && data?.ok) {
     emitAuthStateChanged();
   }
@@ -54,5 +70,5 @@ export async function apiLogout() {
 
 export async function apiMe(): Promise<MeResponse> {
   const res = await fetch("/api/auth/me", { cache: "no-store" });
-  return res.json();
+  return parseApiResponse(res) as Promise<MeResponse>;
 }

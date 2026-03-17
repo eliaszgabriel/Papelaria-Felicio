@@ -35,7 +35,11 @@ export function validateCsrfRequest(req: Request) {
   }
 
   return NextResponse.json(
-    { ok: false, error: "csrf_blocked" },
+    {
+      ok: false,
+      error: "csrf_blocked",
+      reason: "Sessao expirada ou origem invalida. Recarregue a pagina e tente novamente.",
+    },
     { status: 403 },
   );
 }
