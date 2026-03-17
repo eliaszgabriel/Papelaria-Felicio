@@ -1,0 +1,38 @@
+{
+  "name": "papelaria-felicio",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --webpack",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "verify": "npm run lint && npm run typecheck",
+    "db:migrate:postgres": "node scripts/migrate-sqlite-to-postgres.mjs"
+  },
+  "dependencies": {
+    "@types/pg": "^8.18.0",
+    "bcryptjs": "^3.0.3",
+    "better-sqlite3": "^12.6.0",
+    "jsonwebtoken": "^9.0.3",
+    "next": "16.1.1",
+    "pg": "^8.20.0",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "sql.js": "^1.14.1",
+    "stripe": "^20.4.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.1.1",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}

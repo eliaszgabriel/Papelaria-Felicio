@@ -1,0 +1,175 @@
+@config "../../tailwind.config.ts";
+@import "tailwindcss";
+
+:root {
+  --felicio-bg: 255 247 234; /* creme */
+  --felicio-ink: 52 46 54; /* texto */
+  --felicio-pink: 244 150 180; /* rosa */
+  --felicio-lilac: 191 168 255; /* lilas */
+  --felicio-mint: 170 232 216; /* menta */
+  --felicio-sun: 255 215 138; /* amarelo */
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  color: rgb(var(--felicio-ink));
+  background: rgb(var(--felicio-bg));
+}
+
+.site-shell {
+  background:
+    radial-gradient(
+      circle at 0% 18%,
+      rgba(246, 201, 211, 0.26) 0%,
+      rgba(246, 201, 211, 0.14) 20%,
+      transparent 44%
+    ),
+    radial-gradient(
+      circle at 100% 22%,
+      rgba(245, 204, 214, 0.24) 0%,
+      rgba(245, 204, 214, 0.12) 20%,
+      transparent 44%
+    ),
+    radial-gradient(
+      circle at 50% 18%,
+      rgba(246, 241, 227, 0.28) 0%,
+      rgba(246, 241, 227, 0.18) 24%,
+      transparent 52%
+    ),
+    linear-gradient(
+      90deg,
+      rgb(246, 229, 233) 0%,
+      rgb(246, 242, 231) 50%,
+      rgb(245, 229, 233) 100%
+    );
+}
+
+.product-rail-mask {
+  overflow: hidden;
+  mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    black 4%,
+    black 96%,
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    black 4%,
+    black 96%,
+    transparent 100%
+  );
+}
+
+.product-rail-track {
+  display: flex;
+  gap: 1.25rem;
+  width: max-content;
+  will-change: transform;
+  animation: felicio-marquee 38s linear infinite;
+}
+
+.product-rail-mask:hover .product-rail-track {
+  animation-play-state: paused;
+}
+
+.product-rail-card {
+  width: min(18rem, 78vw);
+  flex: 0 0 auto;
+  will-change: transform;
+  animation: felicio-float 5.8s ease-in-out infinite;
+}
+
+@keyframes felicio-marquee {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+
+  to {
+    transform: translate3d(calc(-50% - 0.5rem), 0, 0);
+  }
+}
+
+@keyframes felicio-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes felicio-badge-pop {
+  0% {
+    transform: scale(0.72);
+    opacity: 0;
+  }
+
+  55% {
+    transform: scale(1.12);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes felicio-toast-up {
+  0% {
+    transform: translate3d(0, 10px, 0) scale(0.96);
+    opacity: 0;
+  }
+
+  18%,
+  82% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 1;
+  }
+
+  100% {
+    transform: translate3d(0, -10px, 0) scale(0.98);
+    opacity: 0;
+  }
+}
+
+@keyframes felicio-panel-in {
+  0% {
+    transform: translate3d(0, 14px, 0) scale(0.98);
+    opacity: 0;
+  }
+
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 1;
+  }
+}
+
+/* Vinheta lateral rosa, mais presente nas bordas e suave no centro */
+.vinheta-lateral {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    linear-gradient(
+      to right,
+      rgba(244, 150, 180, 0.05) 0%,
+      rgba(244, 150, 180, 0.04) 11%,
+      transparent 30%
+    ),
+    linear-gradient(
+      to left,
+      rgba(244, 150, 180, 0.05) 0%,
+      rgba(244, 150, 180, 0.04) 11%,
+      transparent 30%
+    );
+}
