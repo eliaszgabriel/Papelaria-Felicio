@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Container from "@/components/layout/Container";
 import ProductCard from "./ProductCard";
-import { getSiteUrl } from "@/lib/siteUrl";
+import { getInternalSiteUrl } from "@/lib/siteUrl";
 
 export const dynamic = "force-dynamic";
 
@@ -35,11 +35,16 @@ type ProductGridResponse = {
 };
 
 async function getProducts(query?: string): Promise<ProductGridResponse> {
-  const base = getSiteUrl();
+  const base = getInternalSiteUrl();
   const qs = query ? `?${query}` : "";
   const res = await fetch(`${base}/api/products${qs}`, { cache: "no-store" });
 
   if (!res.ok) {
+    return { items: [] };
+  }
+
+  const contentType = res.headers.get("content-type") || "";
+  if (!contentType.includes("application/json")) {
     return { items: [] };
   }
 

@@ -2,7 +2,7 @@ import Link from "next/link";
 import Container from "@/components/layout/Container";
 import ProductCard from "@/components/product/ProductCard";
 import { COLOR_OPTIONS, SUBCATEGORY_OPTIONS } from "@/lib/catalog";
-import { getSiteUrl } from "@/lib/siteUrl";
+import { getInternalSiteUrl } from "@/lib/siteUrl";
 
 export const dynamic = "force-dynamic";
 
@@ -36,17 +36,25 @@ type ProductsResponse = {
 };
 
 async function getCategories() {
-  const base = getSiteUrl();
+  const base = getInternalSiteUrl();
   const res = await fetch(`${base}/api/categories`, { cache: "no-store" });
   if (!res.ok) return { items: [] } satisfies CategoriesResponse;
+  const contentType = res.headers.get("content-type") || "";
+  if (!contentType.includes("application/json")) {
+    return { items: [] } satisfies CategoriesResponse;
+  }
   return (await res.json()) as CategoriesResponse;
 }
 
 async function getProducts(query?: string) {
-  const base = getSiteUrl();
+  const base = getInternalSiteUrl();
   const qs = query ? `?${query}` : "";
   const res = await fetch(`${base}/api/products${qs}`, { cache: "no-store" });
   if (!res.ok) return { items: [], total: 0 } satisfies ProductsResponse;
+  const contentType = res.headers.get("content-type") || "";
+  if (!contentType.includes("application/json")) {
+    return { items: [], total: 0 } satisfies ProductsResponse;
+  }
   return (await res.json()) as ProductsResponse;
 }
 

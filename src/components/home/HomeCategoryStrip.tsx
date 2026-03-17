@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { getSiteUrl } from "@/lib/siteUrl";
+import { getInternalSiteUrl } from "@/lib/siteUrl";
 
 type Category = {
   id: string | number;
@@ -21,20 +21,26 @@ type ProductsResponse = {
 };
 
 async function getCategories() {
-  const base = getSiteUrl();
+  const base = getInternalSiteUrl();
   const res = await fetch(`${base}/api/categories`, { cache: "no-store" });
   if (!res.ok) return { items: [] } satisfies CategoriesResponse;
+  const contentType = res.headers.get("content-type") || "";
+  if (!contentType.includes("application/json")) {
+    return { items: [] } satisfies CategoriesResponse;
+  }
   return (await res.json()) as CategoriesResponse;
 }
 
 async function getCoverForCategory(categoryId: string) {
-  const base = getSiteUrl();
+  const base = getInternalSiteUrl();
   const res = await fetch(
     `${base}/api/products?category=${encodeURIComponent(categoryId)}&limit=1`,
     { cache: "no-store" },
   );
 
   if (!res.ok) return null;
+  const contentType = res.headers.get("content-type") || "";
+  if (!contentType.includes("application/json")) return null;
 
   const data = (await res.json()) as ProductsResponse;
   const first = Array.isArray(data.items) ? data.items[0] : null;

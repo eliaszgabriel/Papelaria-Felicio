@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import ProductGallery from "./_ui/ProductGallery";
 import ProductInfo from "./_ui/ProductInfo";
-import { getSiteUrl } from "@/lib/siteUrl";
+import { getInternalSiteUrl, getSiteUrl } from "@/lib/siteUrl";
 
 export const dynamic = "force-dynamic";
 
@@ -28,12 +28,17 @@ type ProductResponse = {
 };
 
 async function getProduct(slug: string): Promise<ProductResponse | null> {
-  const base = getSiteUrl();
+  const base = getInternalSiteUrl();
   const res = await fetch(`${base}/api/products/${encodeURIComponent(slug)}`, {
     cache: "no-store",
   });
 
   if (!res.ok) {
+    return null;
+  }
+
+  const contentType = res.headers.get("content-type") || "";
+  if (!contentType.includes("application/json")) {
     return null;
   }
 

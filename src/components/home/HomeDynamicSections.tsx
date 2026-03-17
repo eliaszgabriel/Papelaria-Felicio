@@ -3,7 +3,7 @@ import Container from "@/components/layout/Container";
 import ProductCard from "@/components/product/ProductCard";
 import AnimatedProductRail from "@/components/home/AnimatedProductRail";
 import HomeCategoryStrip from "@/components/home/HomeCategoryStrip";
-import { getSiteUrl } from "@/lib/siteUrl";
+import { getInternalSiteUrl } from "@/lib/siteUrl";
 
 export const dynamic = "force-dynamic";
 
@@ -27,11 +27,15 @@ type HomeProductsResponse = {
 };
 
 async function getHomeProducts(query: string) {
-  const base = getSiteUrl();
+  const base = getInternalSiteUrl();
   const res = await fetch(`${base}/api/products?${query}`, {
     cache: "no-store",
   });
   if (!res.ok) return { items: [] } satisfies HomeProductsResponse;
+  const contentType = res.headers.get("content-type") || "";
+  if (!contentType.includes("application/json")) {
+    return { items: [] } satisfies HomeProductsResponse;
+  }
   return (await res.json()) as HomeProductsResponse;
 }
 
