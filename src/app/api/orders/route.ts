@@ -21,6 +21,7 @@ import { consumeRateLimit, getRequestIp } from "@/lib/rateLimit";
 import { sendEmail } from "@/lib/email";
 import { createEmailVerificationToken } from "@/lib/emailVerification";
 import { getPostgresPool, hasPostgresConfig } from "@/lib/postgres";
+import { getSiteUrl } from "@/lib/siteUrl";
 
 export const runtime = "nodejs";
 const JWT_SECRET =
@@ -48,6 +49,23 @@ function safeParse<T = unknown>(value: unknown): T | null {
   } catch {
     return null;
   }
+}
+
+function getPublicBaseUrl(req: Request) {
+  const forwardedProto = req.headers.get("x-forwarded-proto");
+  const forwardedHost =
+    req.headers.get("x-forwarded-host") || req.headers.get("host");
+
+  if (forwardedProto && forwardedHost) {
+    return `${forwardedProto}://${forwardedHost}`.replace(/\/+$/, "");
+  }
+
+  const siteUrl = process.env.SITE_URL?.trim();
+  if (siteUrl) {
+    return siteUrl.replace(/\/+$/, "");
+  }
+
+  return getSiteUrl();
 }
 
 async function getUserIdByEmail(email: string) {
@@ -631,8 +649,7 @@ export async function POST(req: Request) {
   const orderAccessToken = createOrderLookupToken(customerEmail);
 
   if (paymentMethod === "pix_auto") {
-    const url = new URL(req.url);
-    const baseUrl = `${url.protocol}//${url.host}`;
+    const baseUrl = getPublicBaseUrl(req);
     const webhookSecret = process.env.PUSHINPAY_WEBHOOK_SECRET || "";
     const webhookUrl = webhookSecret
       ? `${baseUrl}/api/webhooks/pushinpay?token=${encodeURIComponent(webhookSecret)}`
@@ -654,8 +671,7 @@ export async function POST(req: Request) {
   let checkoutUrl: string | null = null;
 
   if (paymentMethod === "card_stripe") {
-    const url = new URL(req.url);
-    const baseUrl = `${url.protocol}//${url.host}`;
+    const baseUrl = getPublicBaseUrl(req);
     const stripe = getStripeClient();
     const lineItems = itemsSnapshot.map((item) => ({
       quantity: item.qty,
@@ -707,8 +723,7 @@ export async function POST(req: Request) {
   }
 
   if (paymentMethod === "card_mercadopago") {
-    const url = new URL(req.url);
-    const baseUrl = `${url.protocol}//${url.host}`;
+    const baseUrl = getPublicBaseUrl(req);
     const webhookSecret = process.env.MERCADOPAGO_WEBHOOK_SECRET || "";
     const webhookUrl = webhookSecret
       ? `${baseUrl}/api/webhooks/mercadopago?token=${encodeURIComponent(webhookSecret)}`
