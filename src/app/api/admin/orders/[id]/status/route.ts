@@ -198,6 +198,17 @@ export async function PATCH(
   }
 
   let updated: UpdatedOrderRow | undefined;
+  let tinySync:
+    | { ok: true; skipped: true; reason: string; tinyOrderId?: string | number | null }
+    | {
+        ok: true;
+        skipped: false;
+        tinyOrderId: string | number;
+        tinyOrderNumber?: string | number | null;
+        approved: boolean;
+      }
+    | { ok: false; skipped: false; reason: string; message: string }
+    | null = null;
 
   if (hasPostgresConfig()) {
     const pool = getPostgresPool();
@@ -244,13 +255,25 @@ export async function PATCH(
   if (
     updated?.status === "pago"
   ) {
-    const syncResult = await syncApprovedOrderToTiny(String(updated.id)).catch((error) => {
+    tinySync = await syncApprovedOrderToTiny(String(updated.id)).catch((error) => {
       console.error("Erro ao sincronizar pedido aprovado no Tiny (admin):", error);
       return null;
     });
 
-    if (syncResult && !syncResult.ok) {
-      console.error("Falha de sincronizacao Tiny (admin):", syncResult.message);
+    if (tinySync?.ok && tinySync.skipped) {
+      console.log("Sincronizacao Tiny pulada (admin):", tinySync.reason);
+    }
+
+    if (tinySync?.ok && !tinySync.skipped) {
+      console.log("Pedido sincronizado com Tiny (admin):", {
+        orderId: updated.id,
+        tinyOrderId: tinySync.tinyOrderId,
+        tinyOrderNumber: tinySync.tinyOrderNumber ?? null,
+      });
+    }
+
+    if (tinySync && !tinySync.ok) {
+      console.error("Falha de sincronizacao Tiny (admin):", tinySync.message);
     }
   }
 
@@ -290,5 +313,5 @@ export async function PATCH(
     }
   }
 
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ ok: true, tinySync });
 }

@@ -126,6 +126,18 @@ export async function POST(req: NextRequest) {
       return null;
     });
 
+    if (syncResult?.ok && syncResult.skipped) {
+      console.log("Sincronizacao Tiny pulada (PushinPay):", syncResult.reason);
+    }
+
+    if (syncResult?.ok && !syncResult.skipped) {
+      console.log("Pedido sincronizado com Tiny (PushinPay):", {
+        orderId: String(fallbackRow.id),
+        tinyOrderId: syncResult.tinyOrderId,
+        tinyOrderNumber: syncResult.tinyOrderNumber ?? null,
+      });
+    }
+
     if (syncResult && !syncResult.ok) {
       console.error("Falha de sincronizacao Tiny (PushinPay):", syncResult.message);
     }
@@ -167,6 +179,18 @@ export async function POST(req: NextRequest) {
     console.error("Erro ao sincronizar pedido aprovado no Tiny (PushinPay):", error);
     return null;
   });
+
+  if (syncResult?.ok && syncResult.skipped) {
+    console.log("Sincronizacao Tiny pulada (PushinPay):", syncResult.reason);
+  }
+
+  if (syncResult?.ok && !syncResult.skipped) {
+    console.log("Pedido sincronizado com Tiny (PushinPay):", {
+      orderId: result.orderId,
+      tinyOrderId: syncResult.tinyOrderId,
+      tinyOrderNumber: syncResult.tinyOrderNumber ?? null,
+    });
+  }
 
   if (syncResult && !syncResult.ok) {
     console.error("Falha de sincronizacao Tiny (PushinPay):", syncResult.message);

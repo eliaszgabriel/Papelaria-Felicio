@@ -78,6 +78,18 @@ export async function POST(req: Request) {
       return null;
     });
 
+    if (syncResult?.ok && syncResult.skipped) {
+      console.log("Sincronizacao Tiny pulada (Mercado Pago):", syncResult.reason);
+    }
+
+    if (syncResult?.ok && !syncResult.skipped) {
+      console.log("Pedido sincronizado com Tiny (Mercado Pago):", {
+        orderId,
+        tinyOrderId: syncResult.tinyOrderId,
+        tinyOrderNumber: syncResult.tinyOrderNumber ?? null,
+      });
+    }
+
     if (syncResult && !syncResult.ok) {
       console.error("Falha de sincronizacao Tiny (Mercado Pago):", syncResult.message);
     }
