@@ -4,6 +4,7 @@ import { shippedTemplate } from "@/lib/emailTemplates";
 import { isAdminSession } from "@/lib/adminAuth";
 import { validateCsrfRequest } from "@/lib/csrf";
 import { getPostgresPool, hasPostgresConfig } from "@/lib/postgres";
+import { syncApprovedOrderToTiny } from "@/lib/tinyOrders";
 
 export const runtime = "nodejs";
 
@@ -238,6 +239,19 @@ export async function PATCH(
         `,
       )
       .get(orderId) as UpdatedOrderRow | undefined;
+  }
+
+  if (
+    updated?.status === "pago"
+  ) {
+    const syncResult = await syncApprovedOrderToTiny(String(updated.id)).catch((error) => {
+      console.error("Erro ao sincronizar pedido aprovado no Tiny (admin):", error);
+      return null;
+    });
+
+    if (syncResult && !syncResult.ok) {
+      console.error("Falha de sincronizacao Tiny (admin):", syncResult.message);
+    }
   }
 
   if (
