@@ -5,6 +5,7 @@ import { isAdminSession } from "@/lib/adminAuth";
 import { validateCsrfRequest } from "@/lib/csrf";
 import { getPostgresPool, hasPostgresConfig } from "@/lib/postgres";
 import { syncApprovedOrderToTiny } from "@/lib/tinyOrders";
+import { markOrderPaid } from "@/lib/orderPayments";
 
 export const runtime = "nodejs";
 
@@ -129,7 +130,28 @@ export async function PATCH(
     history.push({ status, at: Date.now(), by: "admin" });
   }
 
-  if (trackingCode || trackingCarrier || trackingUrl) {
+  if (status === "pago" && current === "aguardando_pagamento") {
+    try {
+      await markOrderPaid({
+        orderId,
+        paidBy: "admin",
+      });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "unknown_error";
+      if (String(message).startsWith("insufficient_stock:")) {
+        return NextResponse.json(
+          { ok: false, error: "insufficient_stock_after_order" },
+          { status: 409 },
+        );
+      }
+
+      console.error("Falha ao marcar pedido como pago no admin:", error);
+      return NextResponse.json(
+        { ok: false, error: "payment_update_failed" },
+        { status: 500 },
+      );
+    }
+  } else if (trackingCode || trackingCarrier || trackingUrl) {
     if (hasPostgresConfig()) {
       const pool = getPostgresPool();
       await pool.query(
