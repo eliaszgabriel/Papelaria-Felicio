@@ -227,7 +227,7 @@ function MobileHeader({
 
         <Link
           href="/"
-          className="inline-flex items-center justify-center"
+          className="inline-flex translate-y-1 items-center justify-center"
           aria-label="Voltar para a home"
         >
           <Image
@@ -525,7 +525,7 @@ function DesktopHeader({
 
           <Link
             href="/"
-            className="absolute left-1/2 top-[-3.8rem] -translate-x-1/2 cursor-pointer"
+            className="absolute left-1/2 top-[-3.55rem] -translate-x-1/2 cursor-pointer"
             aria-label="Voltar para a home"
           >
             <Image

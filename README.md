@@ -57,7 +57,6 @@ Crie um arquivo `.env.local` com as chaves necessarias para o projeto. Em especi
 - `OLIST_PRODUCT_STOCK_URL`
 - `OLIST_USE_STOCK_ENDPOINT`
 - `OLIST_SYNC_SECRET`
-- `ORDER_CLEANUP_SECRET`
 - `RESEND_API_KEY`
 - `EMAIL_FROM`
 - `STORE_ORDER_ALERT_EMAILS`
@@ -292,49 +291,6 @@ Para funcionar no GitHub, configure estes secrets no repositorio:
 
 Se quiser aliviar mais o Tiny depois, voce pode aumentar esse intervalo, mas para itens com estoque baixo o ideal e manter a sincronizacao curta.
 
-## Limpeza automatica de pedidos nao pagos
-
-O projeto agora inclui uma rota para remover pedidos abandonados que ainda ficaram em:
-
-- `aguardando_pagamento`
-
-Por seguranca, a limpeza padrao atinge apenas:
-
-- `card_mercadopago`
-- `card_stripe`
-
-Configuracao no `.env.local`:
-
-```env
-ORDER_CLEANUP_SECRET=troque-este-segredo
-ORDER_CLEANUP_MINUTES=30
-ORDER_CLEANUP_METHODS=card_mercadopago,card_stripe
-```
-
-Rota:
-
-```text
-POST /api/cron/orders/cleanup
-```
-
-Autenticacao:
-
-- enviar o header `x-order-cleanup-secret: SEU_SEGREDO`
-  ou
-- usar `?secret=SEU_SEGREDO`
-
-Exemplo:
-
-```bash
-curl -X POST "https://www.papelariafelicio.com.br/api/cron/orders/cleanup" \
-  -H "x-order-cleanup-secret: SEU_SEGREDO"
-```
-
-O workflow incluido em:
-
-```text
-.github/workflows/order-cleanup.yml
-```
 
 roda automaticamente:
 
