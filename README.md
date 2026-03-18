@@ -236,6 +236,40 @@ curl -X POST "https://www.papelariafelicio.com.br/api/cron/olist/sync-sku" \
 
 Essa rota consulta apenas o SKU informado no Tiny e atualiza esse produto no site.
 
+## Webhook de estoque da Olist / Tiny
+
+Para refletir alteracoes de estoque da loja fisica ou reposicao sem esperar o cursor geral, o projeto agora inclui:
+
+```text
+POST /api/webhooks/olist/stock
+```
+
+Autenticacao:
+
+- enviar `x-olist-stock-secret: SEU_SEGREDO`
+  ou
+- usar `?secret=SEU_SEGREDO`
+
+Configuracao recomendada:
+
+```env
+OLIST_STOCK_WEBHOOK_SECRET=troque-este-segredo
+```
+
+Se esse valor nao existir, a rota usa `OLIST_SYNC_SECRET` como fallback.
+
+Fluxo esperado:
+
+- o Tiny/Olist envia o webhook de atualizacao de estoque
+- o site extrai `dados.sku` ou `dados.skuMapeamento`
+- o site sincroniza somente esse SKU
+
+URL sugerida no ambiente publicado:
+
+```text
+https://www.papelariafelicio.com.br/api/webhooks/olist/stock?secret=SEU_SEGREDO
+```
+
 ## GitHub Actions para sync do Tiny
 
 O projeto ja inclui o workflow:

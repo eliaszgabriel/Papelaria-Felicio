@@ -1,22 +1,11 @@
 import { NextResponse } from "next/server";
-import { fetchOlistProducts, isOlistConfigured } from "@/lib/olist";
-import { importOlistProducts } from "@/lib/olistImport";
+import { isOlistConfigured } from "@/lib/olist";
+import { isOlistSyncAuthorized, syncOlistSku } from "@/lib/olistSyncSku";
 
 export const runtime = "nodejs";
 
-function isAuthorized(request: Request) {
-  const secret = process.env.OLIST_SYNC_SECRET || "";
-  if (!secret) return false;
-
-  const headerSecret = request.headers.get("x-olist-sync-secret") || "";
-  const url = new URL(request.url);
-  const querySecret = url.searchParams.get("secret") || "";
-
-  return headerSecret === secret || querySecret === secret;
-}
-
 export async function POST(request: Request) {
-  if (!isAuthorized(request)) {
+  if (!isOlistSyncAuthorized(request)) {
     return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
   }
 
@@ -40,41 +29,23 @@ export async function POST(request: Request) {
   }
 
   try {
-    const result = await fetchOlistProducts({
-      page: 1,
-      offset: 0,
-      batchSize: 1,
-      query: sku,
-      forceStockEndpoint: true,
-    });
-
-    if (!result.items.length) {
-      return NextResponse.json(
-        { ok: false, error: "sku_not_found", sku },
-        { status: 404 },
-      );
-    }
-
-    const imported = await importOlistProducts(result.items, {
-      ignoreBlocked: true,
-    });
+    const imported = await syncOlistSku(sku);
 
     return NextResponse.json({
       ok: true,
-      sku,
-      total: imported.total,
-      created: imported.created,
-      updated: imported.updated,
-      skipped: imported.skipped,
-      mode: result.mode,
+      ...imported,
     });
   } catch (error) {
+    const message = error instanceof Error ? error.message : "olist_sync_sku_failed";
+    const status =
+      message === "sku_not_found" ? 404 : message === "sku_required" ? 400 : 500;
+
     return NextResponse.json(
       {
         ok: false,
-        error: error instanceof Error ? error.message : "olist_sync_sku_failed",
+        error: message,
       },
-      { status: 500 },
+      { status },
     );
   }
 }
