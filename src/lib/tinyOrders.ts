@@ -36,6 +36,8 @@ type TinySyncState = {
   tinyOrderStatus?: string | null;
   tinySyncedAt?: number | null;
   tinySyncError?: string | null;
+  tinyStockLaunchedAt?: number | null;
+  tinyStockLaunchError?: string | null;
 };
 
 type SyncTinyOrderResult =
@@ -143,6 +145,11 @@ function inferTinyOrderApproveUrl(productsUrl: string) {
 function inferTinyOrderSearchUrl(productsUrl: string) {
   if (!productsUrl.includes("api.tiny.com.br/api2/")) return "";
   return "https://api.tiny.com.br/api2/pedidos.pesquisa.php";
+}
+
+function inferTinyOrderLaunchStockUrl(productsUrl: string) {
+  if (!productsUrl.includes("api.tiny.com.br/api2/")) return "";
+  return "https://api.tiny.com.br/api2/pedido.lancar.estoque.php";
 }
 
 function parseTinyError(payload: unknown) {
@@ -512,6 +519,18 @@ async function approveTinyOrder(token: string, approveUrl: string, tinyOrderId: 
   await postTinyForm<unknown>(approveUrl, params);
 }
 
+async function launchTinyOrderStock(
+  token: string,
+  launchStockUrl: string,
+  tinyOrderId: string | number,
+) {
+  const params = new URLSearchParams();
+  params.set("token", token);
+  params.set("formato", "JSON");
+  params.set("id", String(tinyOrderId));
+  await postTinyForm<unknown>(launchStockUrl, params);
+}
+
 export async function syncApprovedOrderToTiny(orderId: string): Promise<SyncTinyOrderResult> {
   const config = getOlistConfig();
   if (config.mode !== "tiny") {
@@ -528,8 +547,11 @@ export async function syncApprovedOrderToTiny(orderId: string): Promise<SyncTiny
   const searchUrl =
     String(process.env.OLIST_ORDER_SEARCH_URL || "").trim() ||
     inferTinyOrderSearchUrl(config.productsUrl);
+  const launchStockUrl =
+    String(process.env.OLIST_ORDER_LAUNCH_STOCK_URL || "").trim() ||
+    inferTinyOrderLaunchStockUrl(config.productsUrl);
 
-  if (!token || !createUrl || !approveUrl || !searchUrl) {
+  if (!token || !createUrl || !approveUrl || !searchUrl || !launchStockUrl) {
     return { ok: true, skipped: true, reason: "tiny_order_endpoints_missing" };
   }
 
@@ -546,7 +568,11 @@ export async function syncApprovedOrderToTiny(orderId: string): Promise<SyncTiny
   const payment = safeParseRecord(order.paymentJson);
   const syncState = (payment || {}) as TinySyncState & JsonRecord;
 
-  if (syncState.tinyOrderId && syncState.tinyOrderStatus === "aprovado") {
+  if (
+    syncState.tinyOrderId &&
+    syncState.tinyOrderStatus === "aprovado" &&
+    syncState.tinyStockLaunchedAt
+  ) {
     return {
       ok: true,
       skipped: true,
@@ -576,10 +602,17 @@ export async function syncApprovedOrderToTiny(orderId: string): Promise<SyncTiny
         tinyOrderStatus: "incluido",
         tinySyncedAt: Date.now(),
         tinySyncError: null,
+        tinyStockLaunchError: null,
       });
     }
 
-    await approveTinyOrder(token, approveUrl, tinyOrderId);
+    if (syncState.tinyOrderStatus !== "aprovado") {
+      await approveTinyOrder(token, approveUrl, tinyOrderId);
+    }
+
+    if (!syncState.tinyStockLaunchedAt) {
+      await launchTinyOrderStock(token, launchStockUrl, tinyOrderId);
+    }
 
     await updateOrderPaymentPatch(order.id, {
       tinyOrderId,
@@ -587,6 +620,8 @@ export async function syncApprovedOrderToTiny(orderId: string): Promise<SyncTiny
       tinyOrderStatus: "aprovado",
       tinySyncedAt: Date.now(),
       tinySyncError: null,
+      tinyStockLaunchedAt: Date.now(),
+      tinyStockLaunchError: null,
     });
 
     return {
@@ -606,6 +641,8 @@ export async function syncApprovedOrderToTiny(orderId: string): Promise<SyncTiny
       tinyOrderStatus: syncState.tinyOrderStatus ?? null,
       tinySyncedAt: Date.now(),
       tinySyncError: message.slice(0, 500),
+      tinyStockLaunchedAt: syncState.tinyStockLaunchedAt ?? null,
+      tinyStockLaunchError: message.slice(0, 500),
     });
 
     return {
