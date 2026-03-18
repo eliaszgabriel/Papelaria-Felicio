@@ -187,8 +187,8 @@ curl -X POST "https://www.papelariafelicio.com.br/api/cron/olist/sync" \
 
 Sugestao de rotina:
 
-- a cada 30 minutos para loja com movimento maior
-- a cada 1 hora se quiser reduzir chamadas no Tiny
+- a cada 5 minutos para reduzir conflito entre loja fisica e site
+- a cada 30 minutos se quiser aliviar chamadas no Tiny
 
 A rota guarda cursor interno, entao cada execucao continua de onde a anterior parou.
 
@@ -202,7 +202,7 @@ O projeto ja inclui o workflow:
 
 Ele roda:
 
-- a cada 30 minutos
+- a cada 5 minutos
 - e tambem manualmente via `workflow_dispatch`
 
 Para funcionar no GitHub, configure estes secrets no repositorio:
@@ -212,7 +212,7 @@ Para funcionar no GitHub, configure estes secrets no repositorio:
 - `OLIST_SYNC_SECRET`
   o mesmo valor usado no ambiente publicado
 
-Se quiser aliviar mais o Tiny, depois voce pode trocar o cron de `30 em 30 minutos` para `1 em 1 hora`.
+Se quiser aliviar mais o Tiny depois, voce pode aumentar esse intervalo, mas para itens com estoque baixo o ideal e manter a sincronizacao curta.
 
 ## Limpeza automatica de pedidos nao pagos
 
