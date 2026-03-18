@@ -150,6 +150,7 @@ OLIST_PRODUCT_DETAILS_URL=https://api.tiny.com.br/api2/produto.obter.php
 OLIST_PRODUCT_STOCK_URL=https://api.tiny.com.br/api2/produto.obter.estoque.php
 OLIST_ORDER_CREATE_URL=https://api.tiny.com.br/api2/pedido.incluir.php
 OLIST_ORDER_APPROVE_URL=https://api.tiny.com.br/api2/pedido.alterar.situacao
+OLIST_ORDER_SEARCH_URL=https://api.tiny.com.br/api2/pedidos.pesquisa.php
 OLIST_USE_STOCK_ENDPOINT=0
 OLIST_SYNC_SECRET=troque-este-segredo
 OLIST_SYNC_BATCH_SIZE=10

@@ -140,6 +140,11 @@ function inferTinyOrderApproveUrl(productsUrl: string) {
   return "https://api.tiny.com.br/api2/pedido.alterar.situacao";
 }
 
+function inferTinyOrderSearchUrl(productsUrl: string) {
+  if (!productsUrl.includes("api.tiny.com.br/api2/")) return "";
+  return "https://api.tiny.com.br/api2/pedidos.pesquisa.php";
+}
+
 function parseTinyError(payload: unknown) {
   const root = asRecord(payload);
   const retorno = root ? asRecord(root.retorno) : null;
@@ -227,6 +232,27 @@ function parseTinyCreatedOrder(payload: unknown) {
 
     const id = String(registro.id || "").trim();
     const number = String(registro.numero || "").trim() || null;
+    if (id) {
+      return { id, number };
+    }
+  }
+
+  return null;
+}
+
+function parseTinySearchedOrder(payload: unknown) {
+  const root = asRecord(payload);
+  const retorno = root ? asRecord(root.retorno) : null;
+  const pedidos = retorno?.pedidos;
+  if (!Array.isArray(pedidos)) return null;
+
+  for (const item of pedidos) {
+    const row = asRecord(item);
+    const pedido = row?.pedido ? asRecord(row.pedido) : null;
+    if (!pedido) continue;
+
+    const id = String(pedido.id || "").trim();
+    const number = String(pedido.numero || "").trim() || null;
     if (id) {
       return { id, number };
     }
@@ -433,7 +459,27 @@ function buildTinyOrderPayload(order: StoredOrderRow, productCodes: Map<string, 
   });
 }
 
-async function createTinyOrder(token: string, createUrl: string, orderPayload: JsonRecord) {
+async function searchTinyOrderByEcommerceNumber(
+  token: string,
+  searchUrl: string,
+  ecommerceOrderNumber: string,
+) {
+  const params = new URLSearchParams();
+  params.set("token", token);
+  params.set("formato", "JSON");
+  params.set("numeroEcommerce", ecommerceOrderNumber);
+
+  const payload = await postTinyForm<unknown>(searchUrl, params);
+  return parseTinySearchedOrder(payload);
+}
+
+async function createTinyOrder(
+  token: string,
+  createUrl: string,
+  searchUrl: string,
+  ecommerceOrderNumber: string,
+  orderPayload: JsonRecord,
+) {
   const params = new URLSearchParams();
   params.set("token", token);
   params.set("formato", "JSON");
@@ -442,11 +488,19 @@ async function createTinyOrder(token: string, createUrl: string, orderPayload: J
   const payload = await postTinyForm<unknown>(createUrl, params);
   const created = parseTinyCreatedOrder(payload);
 
-  if (!created?.id) {
-    throw new Error("Tiny nao retornou o identificador do pedido criado.");
+  if (created?.id) {
+    return created;
   }
 
-  return created;
+  const searched = await searchTinyOrderByEcommerceNumber(token, searchUrl, ecommerceOrderNumber);
+  if (searched?.id) {
+    return searched;
+  }
+
+  const snippet = JSON.stringify(payload).slice(0, 500);
+  throw new Error(
+    `Tiny nao retornou o identificador do pedido criado e a busca por numeroEcommerce tambem nao encontrou o registro.${snippet ? ` Retorno: ${snippet}` : ""}`,
+  );
 }
 
 async function approveTinyOrder(token: string, approveUrl: string, tinyOrderId: string | number) {
@@ -471,8 +525,11 @@ export async function syncApprovedOrderToTiny(orderId: string): Promise<SyncTiny
   const approveUrl =
     String(process.env.OLIST_ORDER_APPROVE_URL || "").trim() ||
     inferTinyOrderApproveUrl(config.productsUrl);
+  const searchUrl =
+    String(process.env.OLIST_ORDER_SEARCH_URL || "").trim() ||
+    inferTinyOrderSearchUrl(config.productsUrl);
 
-  if (!token || !createUrl || !approveUrl) {
+  if (!token || !createUrl || !approveUrl || !searchUrl) {
     return { ok: true, skipped: true, reason: "tiny_order_endpoints_missing" };
   }
 
@@ -509,7 +566,7 @@ export async function syncApprovedOrderToTiny(orderId: string): Promise<SyncTiny
         .filter(Boolean);
       const productCodes = await getProductCodes(productIds);
       const payload = buildTinyOrderPayload(order, productCodes);
-      const created = await createTinyOrder(token, createUrl, payload);
+      const created = await createTinyOrder(token, createUrl, searchUrl, order.id, payload);
       tinyOrderId = String(created.id);
       tinyOrderNumber = created.number;
 
