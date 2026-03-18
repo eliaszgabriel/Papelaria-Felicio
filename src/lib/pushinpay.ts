@@ -44,6 +44,12 @@ export async function pushinpayCreatePixCashIn(
 
   if (!res.ok) {
     const txt = await res.text().catch(() => "");
+    if (res.status === 422) {
+      const normalized = txt.toLowerCase();
+      if (normalized.includes("value") && (normalized.includes("mínimo 50") || normalized.includes("minimo 50"))) {
+        throw new Error("pushinpay_minimum_value_50");
+      }
+    }
     throw new Error(`PushinPay cashIn failed: ${res.status} ${txt}`);
   }
 

@@ -347,6 +347,10 @@ export default function CheckoutClient() {
             data?.reason ||
               "Esse email já está vinculado a uma conta. Entre com sua senha ou recupere o acesso para continuar.",
           );
+        } else if (errorMsg === "pix_minimum_value") {
+          setError(
+            data?.reason || "O valor mÃ­nimo para gerar Pix automÃ¡tico Ã© de R$ 0,50.",
+          );
         } else {
           setError(`Erro ao criar pedido: ${errorMsg}`);
         }

@@ -656,8 +656,24 @@ export async function POST(req: Request) {
       : `${baseUrl}/api/webhooks/pushinpay`;
 
     const totalCents = Math.round(Number(totalForDb || 0) * 100);
+    let cashin;
+    try {
+      cashin = await pushinpayCreatePixCashIn(totalCents, webhookUrl);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "unknown_error";
+      if (message === "pushinpay_minimum_value_50") {
+        return NextResponse.json(
+          {
+            ok: false,
+            error: "pix_minimum_value",
+            reason: "O valor minimo para gerar Pix automatico e de R$ 0,50.",
+          },
+          { status: 400 },
+        );
+      }
 
-    const cashin = await pushinpayCreatePixCashIn(totalCents, webhookUrl);
+      throw error;
+    }
     payment = {
       method: "pix_auto",
       provider: "pushinpay",
