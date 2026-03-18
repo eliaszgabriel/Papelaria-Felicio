@@ -203,6 +203,39 @@ Sugestao de rotina:
 
 A rota guarda cursor interno, entao cada execucao continua de onde a anterior parou.
 
+## Sync imediato por SKU
+
+Quando voce repor ou ajustar um produto especifico no Tiny, pode atualizar esse item no site sem esperar o cursor geral:
+
+```text
+POST /api/cron/olist/sync-sku
+```
+
+Autenticacao:
+
+- enviar o header `x-olist-sync-secret: SEU_SEGREDO`
+  ou
+- usar `?secret=SEU_SEGREDO`
+
+Payload:
+
+```json
+{
+  "sku": "SEU-SKU"
+}
+```
+
+Exemplo:
+
+```bash
+curl -X POST "https://www.papelariafelicio.com.br/api/cron/olist/sync-sku" \
+  -H "x-olist-sync-secret: SEU_SEGREDO" \
+  -H "Content-Type: application/json" \
+  -d '{"sku":"ABC123"}'
+```
+
+Essa rota consulta apenas o SKU informado no Tiny e atualiza esse produto no site.
+
 ## GitHub Actions para sync do Tiny
 
 O projeto ja inclui o workflow:
