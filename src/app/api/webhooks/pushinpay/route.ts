@@ -3,6 +3,7 @@ import { sendPaidEmailIfNeeded } from "@/lib/orderNotifications";
 import { markOrderPaid } from "@/lib/orderPayments";
 import { pushinpayGetTransaction } from "@/lib/pushinpay";
 import { getPostgresPool, hasPostgresConfig } from "@/lib/postgres";
+import { syncApprovedOrderToTiny } from "@/lib/tinyOrders";
 
 export const runtime = "nodejs";
 
@@ -63,10 +64,15 @@ export async function POST(req: NextRequest) {
   if (hasPostgresConfig()) {
     const pool = getPostgresPool();
     const result = await pool.query<Record<string, unknown>>(
-      `SELECT id, status, total, "statusHistoryJson", "paymentJson", "createdAt", "itemsJson",
-              "stockDeductedAt", "paidNotifiedAt"
+      `SELECT id, status, total,
+              statushistoryjson AS "statusHistoryJson",
+              paymentjson AS "paymentJson",
+              createdat AS "createdAt",
+              itemsjson AS "itemsJson",
+              stockdeductedat AS "stockDeductedAt",
+              paidnotifiedat AS "paidNotifiedAt"
        FROM orders
-       WHERE "paymentJson" LIKE $1
+       WHERE paymentjson LIKE $1
        LIMIT 1`,
       [`%${body.id}%`],
     );
@@ -115,6 +121,15 @@ export async function POST(req: NextRequest) {
     fallbackRow.status === "enviado" ||
     fallbackRow.status === "entregue"
   ) {
+    const syncResult = await syncApprovedOrderToTiny(String(fallbackRow.id)).catch((error) => {
+      console.error("Erro ao sincronizar pedido aprovado no Tiny (PushinPay):", error);
+      return null;
+    });
+
+    if (syncResult && !syncResult.ok) {
+      console.error("Falha de sincronizacao Tiny (PushinPay):", syncResult.message);
+    }
+
     return NextResponse.json({ ok: true, already_processed: true });
   }
 
@@ -146,6 +161,15 @@ export async function POST(req: NextRequest) {
 
   if (result.alreadyProcessed) {
     return NextResponse.json({ ok: true, already_processed: true });
+  }
+
+  const syncResult = await syncApprovedOrderToTiny(result.orderId).catch((error) => {
+    console.error("Erro ao sincronizar pedido aprovado no Tiny (PushinPay):", error);
+    return null;
+  });
+
+  if (syncResult && !syncResult.ok) {
+    console.error("Falha de sincronizacao Tiny (PushinPay):", syncResult.message);
   }
 
   if (result.shouldSendPaidEmail) {

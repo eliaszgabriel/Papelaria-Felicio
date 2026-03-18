@@ -4,6 +4,7 @@ import { sendPaidEmailIfNeeded } from "@/lib/orderNotifications";
 import { markOrderPaid } from "@/lib/orderPayments";
 import { getMercadoPagoPayment } from "@/lib/mercadoPago";
 import { sendNewOrderAdminEmailByOrderId } from "@/lib/adminOrderNotifications";
+import { syncApprovedOrderToTiny } from "@/lib/tinyOrders";
 
 export const runtime = "nodejs";
 
@@ -71,6 +72,15 @@ export async function POST(req: Request) {
         paymentStatus: payment.status ?? null,
       },
     });
+
+    const syncResult = await syncApprovedOrderToTiny(orderId).catch((error) => {
+      console.error("Erro ao sincronizar pedido aprovado no Tiny (Mercado Pago):", error);
+      return null;
+    });
+
+    if (syncResult && !syncResult.ok) {
+      console.error("Falha de sincronizacao Tiny (Mercado Pago):", syncResult.message);
+    }
 
     if (!result.alreadyProcessed && result.shouldSendPaidEmail) {
       try {
