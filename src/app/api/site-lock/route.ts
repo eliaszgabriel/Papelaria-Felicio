@@ -5,12 +5,26 @@ import {
   getSiteLockPassword,
   isSiteLockEnabled,
 } from "@/lib/siteLock";
+import { getSiteUrl } from "@/lib/siteUrl";
 
 export const runtime = "nodejs";
 
+function getPublicBaseUrl(req: Request) {
+  const forwardedProto = req.headers.get("x-forwarded-proto");
+  const forwardedHost = req.headers.get("x-forwarded-host") || req.headers.get("host");
+
+  if (forwardedProto && forwardedHost) {
+    return `${forwardedProto}://${forwardedHost}`.replace(/\/+$/, "");
+  }
+
+  return getSiteUrl();
+}
+
 export async function POST(req: Request) {
+  const baseUrl = getPublicBaseUrl(req);
+
   if (!isSiteLockEnabled()) {
-    return NextResponse.redirect(new URL("/", req.url));
+    return NextResponse.redirect(new URL("/", baseUrl));
   }
 
   const form = await req.formData().catch(() => null);
@@ -19,11 +33,11 @@ export async function POST(req: Request) {
 
   if (!password || password !== getSiteLockPassword()) {
     return NextResponse.redirect(
-      new URL(`/site-lock?error=1&next=${encodeURIComponent(nextPath)}`, req.url),
+      new URL(`/site-lock?error=1&next=${encodeURIComponent(nextPath)}`, baseUrl),
     );
   }
 
-  const response = NextResponse.redirect(new URL(nextPath || "/", req.url));
+  const response = NextResponse.redirect(new URL(nextPath || "/", baseUrl));
   response.cookies.set(getSiteLockCookieName(), await createSiteLockToken(password), {
     httpOnly: true,
     sameSite: "lax",
