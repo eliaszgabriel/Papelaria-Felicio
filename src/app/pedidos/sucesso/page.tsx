@@ -9,7 +9,9 @@ import { getMercadoPagoPayment } from "@/lib/mercadoPago";
 import { sendPaidEmailIfNeeded } from "@/lib/orderNotifications";
 import { markOrderPaid } from "@/lib/orderPayments";
 import { PAYMENT_LABELS } from "@/lib/payments";
+import { pushinpayGetTransaction } from "@/lib/pushinpay";
 import { getStripeClient } from "@/lib/stripe";
+import { syncApprovedOrderToTiny } from "@/lib/tinyOrders";
 
 type Props = {
   searchParams: Promise<{
@@ -134,6 +136,8 @@ export default async function PedidoSucesso({ searchParams }: Props) {
         });
 
         if (!paymentResult.alreadyProcessed && paymentResult.shouldSendPaidEmail) {
+          await syncApprovedOrderToTiny(String(order.id)).catch(() => null);
+
           try {
             await sendNewOrderAdminEmailByOrderId(String(order.id));
           } catch {
@@ -184,6 +188,61 @@ export default async function PedidoSucesso({ searchParams }: Props) {
             paymentStatus: payment.status ?? null,
           },
         });
+
+        if (!paymentResult.alreadyProcessed && paymentResult.shouldSendPaidEmail) {
+          await syncApprovedOrderToTiny(String(order.id)).catch(() => null);
+
+          try {
+            await sendNewOrderAdminEmailByOrderId(String(order.id));
+          } catch {
+            // Mantem silencioso; o webhook ainda pode confirmar depois.
+          }
+
+          try {
+            await sendPaidEmailIfNeeded(String(order.id));
+          } catch {
+            // Mantem silencioso; o webhook ainda pode confirmar depois.
+          }
+        }
+
+        const refreshed = await fetch(
+          `${baseUrl}/api/orders/${encodeURIComponent(orderId)}`,
+          {
+            cache: "no-store",
+            headers: { cookie: cookieHeader },
+          },
+        );
+        const refreshedData = await refreshed.json().catch(() => null);
+        if (refreshed.ok && refreshedData?.ok) {
+          data = refreshedData;
+          order = refreshedData.order;
+        }
+      }
+    } catch {
+      // Fallback silencioso.
+    }
+  }
+
+  if (
+    order?.paymentMethod === "pix_auto" &&
+    order?.status === "aguardando_pagamento" &&
+    order?.payment?.pushinpayTransactionId
+  ) {
+    try {
+      const transaction = await pushinpayGetTransaction(
+        String(order.payment.pushinpayTransactionId),
+      );
+
+      if (transaction.status === "paid") {
+        const paymentResult = await markOrderPaid({
+          orderId: String(order.id),
+          paidBy: "pushinpay",
+          paymentPatch: {
+            endToEndId: transaction.end_to_end_id ?? null,
+          },
+        });
+
+        await syncApprovedOrderToTiny(String(order.id)).catch(() => null);
 
         if (!paymentResult.alreadyProcessed && paymentResult.shouldSendPaidEmail) {
           try {
