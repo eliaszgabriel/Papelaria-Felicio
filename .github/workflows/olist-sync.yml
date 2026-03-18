@@ -30,6 +30,11 @@ jobs:
           echo "Triggering sync at: ${SITE_URL_CLEAN%/}/api/cron/olist/sync"
 
           curl --fail --show-error --silent \
+            --retry 4 \
+            --retry-all-errors \
+            --retry-delay 10 \
+            --connect-timeout 15 \
+            --max-time 120 \
             -X POST "${SITE_URL_CLEAN%/}/api/cron/olist/sync" \
             -H "x-olist-sync-secret: ${OLIST_SYNC_SECRET_CLEAN}" \
             -H "Content-Type: application/json"
