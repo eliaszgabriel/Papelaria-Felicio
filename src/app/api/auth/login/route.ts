@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { validateCsrfRequest } from "@/lib/csrf";
 import { getUserByEmail } from "@/lib/authStore";
 import { consumeRateLimit, getRequestIp } from "@/lib/rateLimit";
+import { getUserSessionCookieOptions } from "@/lib/secureCookies";
 import { createSessionToken } from "@/lib/sessionToken";
 
 type LoginBody = {
@@ -99,11 +100,7 @@ export async function POST(req: Request) {
   });
 
   response.cookies.set("pf_session", token, {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    path: "/",
-    maxAge: 60 * 60 * 24 * 30,
+    ...getUserSessionCookieOptions(),
   });
 
   return response;

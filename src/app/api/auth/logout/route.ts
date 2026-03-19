@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { validateCsrfRequest } from "@/lib/csrf";
+import { getExpiredCookieOptions } from "@/lib/secureCookies";
 
 export async function POST(req: Request) {
   const csrfError = validateCsrfRequest(req);
@@ -9,11 +10,7 @@ export async function POST(req: Request) {
 
   const res = NextResponse.json({ ok: true });
   res.cookies.set("pf_session", "", {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    path: "/",
-    maxAge: 0,
+    ...getExpiredCookieOptions("lax"),
   });
   return res;
 }

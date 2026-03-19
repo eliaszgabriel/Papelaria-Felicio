@@ -5,6 +5,8 @@ import {
   getSiteLockPassword,
   isSiteLockEnabled,
 } from "@/lib/siteLock";
+import { consumeRateLimit, getRequestIp } from "@/lib/rateLimit";
+import { getSiteLockCookieOptions } from "@/lib/secureCookies";
 import { getSiteUrl } from "@/lib/siteUrl";
 
 export const runtime = "nodejs";
@@ -31,6 +33,19 @@ export async function POST(req: Request) {
   const password = String(form?.get("password") || "");
   const nextPath = String(form?.get("next") || "/");
 
+  const rateLimit = await consumeRateLimit({
+    scope: "site-lock",
+    key: getRequestIp(req),
+    limit: 10,
+    windowMs: 15 * 60 * 1000,
+  });
+
+  if (!rateLimit.ok) {
+    return NextResponse.redirect(
+      new URL(`/site-lock?error=1&next=${encodeURIComponent(nextPath)}`, baseUrl),
+    );
+  }
+
   if (!password || password !== getSiteLockPassword()) {
     return NextResponse.redirect(
       new URL(`/site-lock?error=1&next=${encodeURIComponent(nextPath)}`, baseUrl),
@@ -39,11 +54,7 @@ export async function POST(req: Request) {
 
   const response = NextResponse.redirect(new URL(nextPath || "/", baseUrl));
   response.cookies.set(getSiteLockCookieName(), await createSiteLockToken(password), {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    path: "/",
-    maxAge: 60 * 60 * 12,
+    ...getSiteLockCookieOptions(),
   });
   return response;
 }

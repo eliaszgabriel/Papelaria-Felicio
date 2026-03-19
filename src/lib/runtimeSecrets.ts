@@ -156,3 +156,5 @@ export function validateCriticalEnvironment() {
 
   validated = true;
 }
+
+validateCriticalEnvironment();

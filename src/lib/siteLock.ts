@@ -2,13 +2,17 @@ const SITE_LOCK_COOKIE = "pf_site_lock";
 const SITE_LOCK_BYPASS_HEADER = "x-pf-site-lock-bypass";
 
 function getSiteLockSecret() {
-  return (
+  const configured =
     process.env.SITE_LOCK_SECRET ||
     process.env.ADMIN_SESSION_SECRET ||
     process.env.JWT_SECRET ||
-    process.env.SITE_LOCK_PASSWORD ||
-    "pf-site-lock"
-  );
+    process.env.SITE_LOCK_PASSWORD;
+
+  if (configured) {
+    return configured;
+  }
+
+  return process.env.NODE_ENV === "production" ? "" : "pf-site-lock";
 }
 
 export function getSiteLockBypassHeaderName() {

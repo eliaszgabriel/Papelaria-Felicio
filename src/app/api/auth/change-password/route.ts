@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { validateCsrfRequest } from "@/lib/csrf";
 import { getUserById, updateUserPassword } from "@/lib/authStore";
+import { consumeRateLimit, getRequestIp } from "@/lib/rateLimit";
 import { verifySessionToken } from "@/lib/sessionToken";
 import { validatePassword } from "@/lib/validators";
 
@@ -52,6 +53,25 @@ export async function POST(req: Request) {
     return NextResponse.json(
       { ok: false, reason: "unauthorized" },
       { status: 401 },
+    );
+  }
+
+  const rateLimit = await consumeRateLimit({
+    scope: "auth-change-password",
+    key: `${getRequestIp(req)}:${payload.sub}`,
+    limit: 8,
+    windowMs: 30 * 60 * 1000,
+  });
+
+  if (!rateLimit.ok) {
+    return NextResponse.json(
+      { ok: false, reason: "Muitas tentativas. Aguarde alguns minutos." },
+      {
+        status: 429,
+        headers: {
+          "Retry-After": String(Math.ceil(rateLimit.retryAfterMs / 1000)),
+        },
+      },
     );
   }
 

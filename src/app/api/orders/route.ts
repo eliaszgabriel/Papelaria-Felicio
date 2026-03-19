@@ -20,6 +20,7 @@ import { consumeRateLimit, getRequestIp } from "@/lib/rateLimit";
 import { sendEmail } from "@/lib/email";
 import { createEmailVerificationToken } from "@/lib/emailVerification";
 import { getPostgresPool, hasPostgresConfig } from "@/lib/postgres";
+import { getOrderLookupCookieOptions } from "@/lib/secureCookies";
 import { getSiteUrl } from "@/lib/siteUrl";
 import { escapeHtml, sanitizeEmailUrl } from "@/lib/htmlEscape";
 import {
@@ -998,11 +999,7 @@ export async function POST(req: Request) {
   });
 
   res.cookies.set("pf_order_lookup", orderAccessToken, {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    path: "/",
-    maxAge: 60 * 60 * 24 * 14,
+    ...getOrderLookupCookieOptions(),
   });
 
   return res;

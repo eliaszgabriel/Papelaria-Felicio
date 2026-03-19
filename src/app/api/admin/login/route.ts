@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import { ADMIN_COOKIE_NAME, createAdminToken } from "@/lib/adminAuth";
 import { validateCsrfRequest } from "@/lib/csrf";
 import { consumeRateLimit, getRequestIp } from "@/lib/rateLimit";
+import { getAdminSessionCookieOptions } from "@/lib/secureCookies";
 import {
   getAdminSessionSecret,
 } from "@/lib/runtimeSecrets";
@@ -88,11 +89,7 @@ export async function POST(req: Request) {
   const token = createAdminToken();
 
   res.cookies.set(ADMIN_COOKIE_NAME, token, {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    path: "/",
-    maxAge: 60 * 60 * 8,
+    ...getAdminSessionCookieOptions(),
   });
 
   return res;
