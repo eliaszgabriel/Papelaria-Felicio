@@ -51,6 +51,14 @@ export default function ProductCard({
   const badges = Array.isArray(product.badges)
     ? product.badges.filter(Boolean).slice(0, 2)
     : [];
+  const titleClampStyle = compact
+    ? {
+        display: "-webkit-box",
+        WebkitLineClamp: 3,
+        WebkitBoxOrient: "vertical" as const,
+        overflow: "hidden",
+      }
+    : undefined;
 
   return (
     <article
@@ -75,7 +83,7 @@ export default function ProductCard({
         aria-label={`Abrir ${product.title}`}
       />
 
-      <div className={compact ? "relative p-2 sm:p-3.5" : "relative p-4"}>
+      <div className={compact ? "relative p-2.5 sm:p-3.5" : "relative p-4"}>
         <div className="relative overflow-hidden rounded-[1.6rem] border border-white/70 bg-white/70 shadow-[inset_0_1px_0_rgba(255,255,255,0.75)]">
           {product.image ? (
             <Image
@@ -85,7 +93,7 @@ export default function ProductCard({
               height={640}
               className={[
                 "w-full object-cover transition duration-500 group-hover:scale-[1.06]",
-                compact ? "h-[102px] sm:h-[158px]" : "h-[220px]",
+                compact ? "h-[126px] sm:h-[158px]" : "h-[220px]",
               ].join(" ")}
               loading="lazy"
               unoptimized
@@ -94,7 +102,7 @@ export default function ProductCard({
             <div
               className={[
                 "w-full bg-gradient-to-br from-felicio-lilac/15 via-felicio-pink/10 to-felicio-mint/15",
-                compact ? "h-[102px] sm:h-[158px]" : "h-[220px]",
+                compact ? "h-[126px] sm:h-[158px]" : "h-[220px]",
               ].join(" ")}
             />
           )}
@@ -127,7 +135,13 @@ export default function ProductCard({
         )}
       </div>
 
-      <div className={compact ? "px-2.5 pb-3 sm:px-[18px] sm:pb-[18px]" : "px-6 pb-6"}>
+      <div
+        className={
+          compact
+            ? "px-2.5 pb-3.5 sm:px-[18px] sm:pb-[18px]"
+            : "px-6 pb-6"
+        }
+      >
         {badges.length > 0 && (
           <div className="mb-1.5 flex flex-wrap items-center gap-1 text-[9px] font-extrabold uppercase tracking-[0.14em] text-felicio-ink/45 sm:mb-3 sm:gap-2 sm:text-[11px] sm:tracking-[0.18em]">
             {badges.map((badge) => (
@@ -141,15 +155,16 @@ export default function ProductCard({
         <h3
           className={
             compact
-              ? "text-[11px] font-extrabold leading-snug text-felicio-ink sm:text-[15px]"
+              ? "min-h-[3.9rem] text-[11px] font-extrabold leading-snug text-felicio-ink sm:min-h-[unset] sm:text-[15px]"
               : "text-base font-extrabold leading-snug text-felicio-ink"
           }
+          style={titleClampStyle}
         >
           {product.title}
         </h3>
 
         <div className="mt-2 flex items-end justify-between gap-2 sm:mt-3 sm:gap-3">
-          <div>
+          <div className="min-w-0 flex-1">
             <div
               className={
                 compact
@@ -166,18 +181,18 @@ export default function ProductCard({
               </div>
             )}
 
-            <div className="mt-1 inline-flex rounded-full border border-black/5 bg-white/75 px-2 py-1 text-[9px] font-semibold text-felicio-ink/60 sm:mt-2 sm:px-3 sm:text-[11px]">
+            <div className="mt-1 inline-flex max-w-full rounded-full border border-black/5 bg-white/75 px-2 py-1 text-[9px] font-semibold leading-tight text-felicio-ink/60 sm:mt-2 sm:px-3 sm:text-[11px]">
               {stockLabel}
             </div>
           </div>
 
-          <div className="relative z-20">
+          <div className="relative z-20 shrink-0">
             <Link href={href}>
               <Button
                 className={[
                   "shadow-[0_12px_30px_rgba(244,150,180,0.25)] transition duration-300 group-hover:shadow-[0_16px_34px_rgba(244,150,180,0.34)]",
                   compact
-                    ? "px-2 py-1.5 text-[10px] sm:px-3 sm:py-2 sm:text-xs"
+                    ? "min-w-[6.4rem] px-2.5 py-1.5 text-[10px] leading-none sm:min-w-[unset] sm:px-3 sm:py-2 sm:text-xs"
                     : "px-4 py-2 text-sm",
                 ].join(" ")}
                 disabled={outOfStock}

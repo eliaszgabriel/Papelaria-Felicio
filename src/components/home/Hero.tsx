@@ -29,7 +29,7 @@ export default function Hero() {
       <Container>
         <div className="grid items-center gap-10 py-10 lg:grid-cols-2 lg:py-14">
           <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/75 px-4 py-2 text-xs font-semibold shadow-[0_10px_30px_rgba(0,0,0,0.05)]">
+            <div className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/75 px-3.5 py-2 text-[11px] font-semibold shadow-[0_10px_30px_rgba(0,0,0,0.05)] sm:px-4 sm:text-xs">
               <span className="h-2 w-2 rounded-full bg-felicio-pink" />
               Curadoria delicada para presentear e organizar com carinho
             </div>
@@ -60,7 +60,7 @@ export default function Hero() {
               </Link>
             </div>
 
-            <div className="mt-8 grid max-w-xl grid-cols-3 gap-3">
+            <div className="mt-8 grid max-w-xl grid-cols-3 gap-2 sm:gap-3">
               {[
                 ["Pix", "Confirmação automática"],
                 ["Estoque", "Atualizado no pedido"],
@@ -68,12 +68,14 @@ export default function Hero() {
               ].map(([title, text]) => (
                 <div
                   key={title}
-                  className="rounded-[1.5rem] border border-white/65 bg-white/70 px-4 py-4 shadow-[0_12px_30px_rgba(0,0,0,0.05)] backdrop-blur"
+                  className="rounded-[1.35rem] border border-white/65 bg-white/70 px-3 py-3 shadow-[0_12px_30px_rgba(0,0,0,0.05)] backdrop-blur sm:rounded-[1.5rem] sm:px-4 sm:py-4"
                 >
-                  <div className="text-sm font-extrabold text-felicio-ink/85">
+                  <div className="text-[13px] font-extrabold text-felicio-ink/85 sm:text-sm">
                     {title}
                   </div>
-                  <div className="mt-1 text-xs text-felicio-ink/60">{text}</div>
+                  <div className="mt-1 text-[11px] leading-snug text-felicio-ink/60 sm:text-xs">
+                    {text}
+                  </div>
                 </div>
               ))}
             </div>
@@ -81,11 +83,11 @@ export default function Hero() {
 
           <div className="relative">
             <div className="absolute -inset-10 rounded-[2.5rem] bg-white/22 blur-2xl" />
-            <div className="relative overflow-hidden rounded-[2.5rem] border border-white/65 bg-[linear-gradient(180deg,rgba(255,255,255,0.72),rgba(255,255,255,0.54))] p-6 shadow-[0_24px_60px_rgba(0,0,0,0.08)] backdrop-blur-xl">
+            <div className="relative overflow-hidden rounded-[2.15rem] border border-white/65 bg-[linear-gradient(180deg,rgba(255,255,255,0.72),rgba(255,255,255,0.54))] p-4 shadow-[0_24px_60px_rgba(0,0,0,0.08)] backdrop-blur-xl sm:rounded-[2.5rem] sm:p-6">
               <div className="absolute -right-8 top-6 h-32 w-32 rounded-full bg-felicio-lilac/10 blur-3xl" />
               <div className="absolute -left-8 bottom-4 h-28 w-28 rounded-full bg-felicio-mint/10 blur-3xl" />
 
-              <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-felicio-sun/22 via-felicio-pink/24 to-felicio-lilac/22 p-6">
+              <div className="relative overflow-hidden rounded-[1.9rem] bg-gradient-to-br from-felicio-sun/22 via-felicio-pink/24 to-felicio-lilac/22 p-4 sm:rounded-3xl sm:p-6">
                 <div className="pointer-events-none absolute inset-0">
                   <Image
                     src="/vitrine-semana.png"
@@ -98,12 +100,12 @@ export default function Hero() {
                   <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,251,248,0.74),rgba(255,255,255,0.28))]" />
                 </div>
 
-                <div className="relative flex items-start justify-between gap-4">
+                <div className="relative flex flex-col items-start gap-4 sm:flex-row sm:items-start sm:justify-between">
                   <div>
-                    <div className="text-sm font-semibold uppercase tracking-[0.18em] text-felicio-ink/65">
+                    <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-felicio-ink/65 sm:text-sm">
                       Vitrine da semana
                     </div>
-                    <div className="mt-2 text-3xl font-extrabold leading-tight text-felicio-ink/92">
+                    <div className="mt-2 text-[2rem] font-extrabold leading-[1.02] text-felicio-ink/92 sm:text-3xl">
                       Escolha o clima
                       <br />
                       da sua compra.
@@ -121,14 +123,14 @@ export default function Hero() {
                   </Link>
                 </div>
 
-                <div className="relative mt-6 grid grid-cols-3 gap-3">
+                <div className="relative mt-6 grid grid-cols-3 gap-2 sm:gap-3">
                   {spotlightCards.map((item, index) => (
                     <Link
                       key={item.label}
                       href={item.href}
                       className={[
-                        "group relative overflow-hidden rounded-2xl border border-white/80 bg-[linear-gradient(135deg,rgba(255,255,255,0.94),rgba(252,241,244,0.88))] p-3 text-center text-sm font-semibold text-felicio-ink/78 shadow-[0_14px_35px_rgba(255,255,255,0.20)] transition hover:-translate-y-1 hover:bg-white",
-                        index === 1 ? "translate-y-4" : "",
+                        "group relative overflow-hidden rounded-[1.1rem] border border-white/80 bg-[linear-gradient(135deg,rgba(255,255,255,0.94),rgba(252,241,244,0.88))] p-2 text-center text-xs font-semibold text-felicio-ink/78 shadow-[0_14px_35px_rgba(255,255,255,0.20)] transition hover:-translate-y-1 hover:bg-white sm:rounded-2xl sm:p-3 sm:text-sm",
+                        index === 1 ? "translate-y-2 sm:translate-y-4" : "",
                       ].join(" ")}
                     >
                       <div className="relative overflow-hidden rounded-[1rem]">
@@ -138,24 +140,24 @@ export default function Hero() {
                           alt={item.label}
                           width={220}
                           height={160}
-                          className="h-20 w-full object-cover transition duration-500 group-hover:scale-105"
+                          className="h-16 w-full object-cover transition duration-500 group-hover:scale-105 sm:h-20"
                           unoptimized
                         />
                       </div>
-                      <div className="mt-3">{item.label}</div>
+                      <div className="mt-2 sm:mt-3">{item.label}</div>
                     </Link>
                   ))}
                 </div>
 
-                <div className="relative mt-6 rounded-[1.6rem] border border-white/80 bg-[linear-gradient(180deg,rgba(255,244,247,0.9),rgba(255,255,255,0.68))] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.72)]">
-                  <div className="flex items-center justify-between text-sm font-semibold text-felicio-ink/85">
+                <div className="relative mt-6 rounded-[1.35rem] border border-white/80 bg-[linear-gradient(180deg,rgba(255,244,247,0.9),rgba(255,255,255,0.68))] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.72)] sm:rounded-[1.6rem] sm:p-4">
+                  <div className="flex items-center justify-between gap-3 text-sm font-semibold text-felicio-ink/85">
                     <span>Seleção da semana</span>
                     <span className="rounded-full border border-felicio-pink/20 bg-[linear-gradient(135deg,rgba(244,150,180,0.24),rgba(255,215,138,0.24))] px-3 py-1 text-xs font-extrabold uppercase tracking-[0.16em] text-felicio-ink/70">
                       Em alta
                     </span>
                   </div>
 
-                  <div className="mt-3 grid grid-cols-2 gap-3">
+                  <div className="mt-3 grid grid-cols-2 gap-2 sm:gap-3">
                     {[
                       ["Destaques da loja", "/produtos?featured=1"],
                       ["Ofertas do momento", "/produtos?deal=1"],
@@ -165,7 +167,7 @@ export default function Hero() {
                       <Link
                         key={label}
                         href={href}
-                        className="rounded-2xl border border-white/70 bg-[linear-gradient(135deg,rgba(255,248,251,0.98),rgba(252,226,236,0.92)_44%,rgba(255,236,198,0.88))] px-3 py-3 text-sm font-semibold text-felicio-ink/80 shadow-[0_10px_24px_rgba(244,150,180,0.12)] transition hover:-translate-y-1 hover:shadow-[0_14px_30px_rgba(244,150,180,0.18)]"
+                        className="rounded-[1rem] border border-white/70 bg-[linear-gradient(135deg,rgba(255,248,251,0.98),rgba(252,226,236,0.92)_44%,rgba(255,236,198,0.88))] px-3 py-2.5 text-xs font-semibold leading-snug text-felicio-ink/80 shadow-[0_10px_24px_rgba(244,150,180,0.12)] transition hover:-translate-y-1 hover:shadow-[0_14px_30px_rgba(244,150,180,0.18)] sm:rounded-2xl sm:py-3 sm:text-sm"
                       >
                         {label}
                       </Link>

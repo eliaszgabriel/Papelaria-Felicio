@@ -84,7 +84,7 @@ export default function Footer() {
               <p>
                 Avenida Betonex 1551, Loja 12
                 <br />
-                Curitiba - Pinhais
+                Curitiba - Piraquara
               </p>
             </div>
 

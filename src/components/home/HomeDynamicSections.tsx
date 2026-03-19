@@ -95,11 +95,11 @@ function Section({
         </Link>
       </div>
 
-      <div className="mt-4 grid grid-cols-3 gap-2.5 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4">
+      <div className="mt-4 flex gap-3 overflow-x-auto pb-2 pr-1 snap-x snap-mandatory sm:grid sm:grid-cols-2 sm:gap-4 sm:overflow-visible sm:pb-0 xl:grid-cols-4 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {items.map((p) => (
           <div
             key={p.id}
-            className="w-full min-w-0 max-w-[300px] justify-self-stretch sm:justify-self-start"
+            className="w-[10.7rem] min-w-[10.7rem] max-w-[10.7rem] snap-start sm:w-full sm:min-w-0 sm:max-w-[300px] sm:justify-self-start"
           >
             <ProductCard product={mapToCard(p)} compact />
           </div>
