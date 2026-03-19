@@ -52,6 +52,17 @@ type NotifyResponse = {
   whatsappLink?: string;
 };
 
+type InvoiceUploadResponse = {
+  ok?: boolean;
+  error?: string;
+  invoice?: {
+    url: string;
+    filename: string;
+    uploadedAt?: number | null;
+    sentAt?: number | null;
+  };
+};
+
 type CustomerWithCpf = Order["customer"] & {
   cpf?: string;
 };
@@ -96,6 +107,9 @@ export default function OrderDetailsAdmin({ orderId }: { orderId: string }) {
   const [tracking, setTracking] = useState("");
   const [carrier, setCarrier] = useState("");
   const [trackingUrl, setTrackingUrl] = useState("");
+  const [invoiceUploading, setInvoiceUploading] = useState(false);
+  const [invoiceSending, setInvoiceSending] = useState(false);
+  const invoiceInputRef = useRef<HTMLInputElement | null>(null);
   const toastTimeoutRef = useRef<number | null>(null);
 
   function showToast(message: string) {
@@ -275,7 +289,7 @@ export default function OrderDetailsAdmin({ orderId }: { orderId: string }) {
     }
   }
 
-  async function resendEmail(type: "paid" | "shipped") {
+  async function resendEmail(type: "paid" | "shipped" | "invoice") {
     if (!order) return;
 
     try {
@@ -293,14 +307,69 @@ export default function OrderDetailsAdmin({ orderId }: { orderId: string }) {
       } | null;
 
       if (!res.ok || !data?.ok) {
-        showToast("Falha ao reenviar email");
+        showToast(type === "invoice" ? "Falha ao enviar nota fiscal" : "Falha ao reenviar email");
         return;
       }
 
-      showToast("Email reenviado");
+      showToast(type === "invoice" ? "Nota fiscal enviada" : "Email reenviado");
+      if (type === "invoice") {
+        await reloadOrder();
+      }
     } catch {
-      showToast("Erro ao reenviar email");
+      showToast(type === "invoice" ? "Erro ao enviar nota fiscal" : "Erro ao reenviar email");
     }
+  }
+
+  async function uploadInvoice(file: File) {
+    if (!order) return;
+
+    setInvoiceUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await fetch(
+        `/api/admin/orders/${encodeURIComponent(order.id)}/invoice`,
+        {
+          method: "POST",
+          body: formData,
+        },
+      );
+
+      const data = (await res.json().catch(() => null)) as InvoiceUploadResponse | null;
+      if (!res.ok || !data?.ok || !data.invoice) {
+        showToast(data?.error || "Falha ao enviar PDF da nota");
+        return;
+      }
+
+      setOrder((current) =>
+        current
+          ? {
+              ...current,
+              invoice: {
+                url: data.invoice!.url,
+                filename: data.invoice!.filename,
+                uploadedAt: data.invoice!.uploadedAt ?? null,
+                sentAt: data.invoice!.sentAt ?? null,
+              },
+            }
+          : current,
+      );
+      showToast("PDF da nota salvo");
+    } catch {
+      showToast("Erro ao salvar nota fiscal");
+    } finally {
+      setInvoiceUploading(false);
+      if (invoiceInputRef.current) {
+        invoiceInputRef.current.value = "";
+      }
+    }
+  }
+
+  async function onPickInvoice(files: FileList | null) {
+    const file = files?.[0];
+    if (!file) return;
+    await uploadInvoice(file);
   }
 
   async function notifyCustomer(nextStatus: string) {
@@ -378,6 +447,7 @@ export default function OrderDetailsAdmin({ orderId }: { orderId: string }) {
 
   const isPaid = order.status === "pago" || order.status === "enviado";
   const isShipped = order.status === "enviado";
+  const hasInvoice = Boolean(order.invoice?.url);
   const customer = order.customer as CustomerWithCpf;
   const history: OrderStatusEvent[] =
     order.statusHistory && order.statusHistory.length > 0
@@ -551,6 +621,14 @@ export default function OrderDetailsAdmin({ orderId }: { orderId: string }) {
                 </div>
 
                 <div className="mt-4 space-y-2">
+                  <input
+                    ref={invoiceInputRef}
+                    type="file"
+                    accept="application/pdf"
+                    className="hidden"
+                    onChange={(e) => void onPickInvoice(e.target.files)}
+                  />
+
                   {order.status === "aguardando_pagamento" && (
                     <button
                       onClick={() => setStatus("pago")}
@@ -624,6 +702,77 @@ export default function OrderDetailsAdmin({ orderId }: { orderId: string }) {
                     >
                       Reenviar email: Enviado
                     </button>
+                  </div>
+
+                  <div className="mt-4 rounded-2xl border border-black/5 bg-white/80 p-4">
+                    <div className="text-xs font-extrabold text-felicio-ink/70">
+                      Nota fiscal
+                    </div>
+                    <p className="mt-2 text-[11px] text-felicio-ink/60">
+                      Envie o PDF da nota e depois dispare o email para o cliente.
+                    </p>
+
+                    {hasInvoice ? (
+                      <div className="mt-3 rounded-2xl border border-black/5 bg-white px-3 py-3 text-xs text-felicio-ink/70">
+                        <div className="font-semibold text-felicio-ink/80">
+                          {order.invoice?.filename}
+                        </div>
+                        {order.invoice?.uploadedAt ? (
+                          <div className="mt-1">
+                            Enviado para o pedido em {formatDate(order.invoice.uploadedAt)}
+                          </div>
+                        ) : null}
+                        {order.invoice?.sentAt ? (
+                          <div className="mt-1">
+                            Email disparado em {formatDate(order.invoice.sentAt)}
+                          </div>
+                        ) : (
+                          <div className="mt-1">Email da nota ainda nao enviado.</div>
+                        )}
+                      </div>
+                    ) : null}
+
+                    <div className="mt-3 grid grid-cols-1 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => invoiceInputRef.current?.click()}
+                        disabled={invoiceUploading}
+                        className="inline-flex w-full items-center justify-center rounded-full border border-black/5 bg-white/90 px-5 py-3 text-sm font-semibold text-felicio-ink/80 transition hover:bg-white disabled:opacity-60"
+                      >
+                        {invoiceUploading
+                          ? "Enviando PDF..."
+                          : hasInvoice
+                            ? "Trocar PDF da nota"
+                            : "Adicionar PDF da nota"}
+                      </button>
+
+                      {hasInvoice ? (
+                        <a
+                          href={order.invoice?.url || "#"}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex w-full items-center justify-center rounded-full border border-black/5 bg-white/90 px-5 py-3 text-sm font-semibold text-felicio-ink/80 transition hover:bg-white"
+                        >
+                          Abrir PDF salvo
+                        </a>
+                      ) : null}
+
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          setInvoiceSending(true);
+                          try {
+                            await resendEmail("invoice");
+                          } finally {
+                            setInvoiceSending(false);
+                          }
+                        }}
+                        disabled={!hasInvoice || invoiceSending}
+                        className="inline-flex w-full items-center justify-center rounded-full bg-gradient-to-r from-felicio-pink/70 to-felicio-lilac/90 px-5 py-3 text-sm font-extrabold text-white transition hover:brightness-105 disabled:opacity-60"
+                      >
+                        {invoiceSending ? "Enviando nota..." : "Enviar nota fiscal ao cliente"}
+                      </button>
+                    </div>
                   </div>
                 </div>
 

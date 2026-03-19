@@ -2,9 +2,14 @@ type SendEmailInput = {
   to: string;
   subject: string;
   html: string;
+  attachments?: Array<{
+    filename: string;
+    content: string;
+    contentType?: string;
+  }>;
 };
 
-export async function sendEmail({ to, subject, html }: SendEmailInput) {
+export async function sendEmail({ to, subject, html, attachments }: SendEmailInput) {
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.EMAIL_FROM;
 
@@ -22,6 +27,7 @@ export async function sendEmail({ to, subject, html }: SendEmailInput) {
       to,
       subject,
       html,
+      attachments,
     }),
   });
 

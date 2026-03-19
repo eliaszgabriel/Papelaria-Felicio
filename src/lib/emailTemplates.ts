@@ -10,6 +10,22 @@ type OrderLike = {
   trackingCode?: string | null;
   trackingCarrier?: string | null;
   trackingUrl?: string | null;
+  address?: {
+    street?: string;
+    number?: string;
+    complement?: string;
+    district?: string;
+    city?: string;
+    uf?: string;
+    cep?: string;
+  } | null;
+  items?: Array<{
+    title?: string;
+    qty?: number;
+    unitPrice?: number;
+    price?: number;
+  }>;
+  invoiceUrl?: string | null;
 };
 
 function moneyBR(value: number) {
@@ -26,6 +42,40 @@ function paymentLabel(method?: string | null) {
   if (method === "pix_auto") return "Pix";
   if (method === "card_stripe" || method === "card_mercadopago") return "Cartao";
   return method || "Nao informado";
+}
+
+function formatAddress(address?: OrderLike["address"] | null) {
+  if (!address) return "Nao informado";
+
+  const parts = [
+    address.street,
+    address.number,
+    address.complement,
+    address.district,
+    address.city,
+    address.uf,
+    address.cep,
+  ]
+    .map((value) => String(value || "").trim())
+    .filter(Boolean);
+
+  return parts.length > 0 ? parts.join(", ") : "Nao informado";
+}
+
+function renderItems(items?: OrderLike["items"]) {
+  if (!items || items.length === 0) {
+    return "<li>Itens nao informados.</li>";
+  }
+
+  return items
+    .map((item) => {
+      const qty = Number(item?.qty || 0);
+      const unitPrice = Number(item?.unitPrice ?? item?.price ?? 0);
+      return `<li>${escapeHtml(String(item?.title || "Item"))} - ${escapeHtml(
+        `Qtd: ${qty}`,
+      )} - ${escapeHtml(moneyBR(unitPrice * qty))}</li>`;
+    })
+    .join("");
 }
 
 export function paidTemplate(order: OrderLike) {
@@ -128,6 +178,39 @@ export function newOrderAdminTemplate(order: OrderLike) {
         <p><a href="${adminLink}">${escapeHtml(adminLink)}</a></p>
         <hr />
         <p style="color:#666;font-size:12px">Aviso automatico da loja</p>
+      </div>
+    `,
+  };
+}
+
+export function invoiceTemplate(order: OrderLike) {
+  const name = escapeHtml(order.customer?.name || "Ola");
+  const orderId = escapeHtml(order.id);
+  const invoiceUrl = sanitizeEmailUrl(order.invoiceUrl || "");
+  const orderLink = sanitizeEmailUrl(
+    `${process.env.SITE_URL ?? ""}/meus-pedidos/${encodeURIComponent(order.id)}`,
+  );
+
+  return {
+    subject: `Nota fiscal do pedido ${order.id}`,
+    html: `
+      <div style="font-family:Arial,sans-serif;line-height:1.55">
+        <h2>Sua nota fiscal chegou</h2>
+        <p>${name}, anexamos a nota fiscal do pedido <b>${orderId}</b>.</p>
+        <p><b>Total:</b> ${escapeHtml(moneyBR(order.total))}</p>
+        <p><b>Pagamento:</b> ${escapeHtml(paymentLabel(order.paymentMethod))}</p>
+        <p><b>Endereco:</b> ${escapeHtml(formatAddress(order.address))}</p>
+        <p><b>Itens:</b></p>
+        <ul>${renderItems(order.items)}</ul>
+        ${
+          invoiceUrl
+            ? `<p>Se preferir, voce tambem pode abrir a nota por aqui: <a href="${invoiceUrl}">${escapeHtml(invoiceUrl)}</a></p>`
+            : ""
+        }
+        <p>Detalhes do pedido:</p>
+        <p><a href="${orderLink}">${escapeHtml(orderLink)}</a></p>
+        <hr />
+        <p style="color:#666;font-size:12px">Papelaria Felicio</p>
       </div>
     `,
   };

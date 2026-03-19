@@ -49,6 +49,12 @@ export type Order = {
   trackingCode?: string | null;
   trackingCarrier?: string | null;
   trackingUrl?: string | null;
+  invoice?: {
+    url: string;
+    filename: string;
+    uploadedAt?: number | null;
+    sentAt?: number | null;
+  } | null;
 
   subtotal: number;
   shippingAmount?: number;

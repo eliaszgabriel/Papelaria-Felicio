@@ -28,6 +28,11 @@ function safeParse<T = unknown>(value: unknown): T | undefined {
 }
 
 function rowToOrder(row: OrderRow) {
+  const payment = safeParse<Record<string, unknown>>(row.paymentJson);
+  const invoicePayload =
+    payment && typeof payment.invoice === "object" && payment.invoice
+      ? (payment.invoice as Record<string, unknown>)
+      : null;
   const statusHistory = safeParse<
     Array<{ status?: string; at?: string | number; by?: string }>
   >(row.statusHistoryJson)?.map((entry) => ({
@@ -41,7 +46,7 @@ function rowToOrder(row: OrderRow) {
     createdAt: Number(row.createdAt || 0),
     status: row.status,
     paymentMethod: row.paymentMethod,
-    payment: safeParse(row.paymentJson),
+    payment,
     customer: safeParse(row.customerJson) ?? {},
     address: safeParse(row.addressJson),
     items: safeParse(row.itemsJson) ?? [],
@@ -51,6 +56,16 @@ function rowToOrder(row: OrderRow) {
     trackingCode: row.trackingCode ?? undefined,
     trackingCarrier: row.trackingCarrier ?? undefined,
     trackingUrl: row.trackingUrl ?? undefined,
+    invoice: invoicePayload?.url
+      ? {
+          url: String(invoicePayload.url),
+          filename: String(invoicePayload.filename || "nota-fiscal.pdf"),
+          uploadedAt: invoicePayload.uploadedAt
+            ? Number(invoicePayload.uploadedAt)
+            : null,
+          sentAt: invoicePayload.sentAt ? Number(invoicePayload.sentAt) : null,
+        }
+      : null,
     statusHistory,
   };
 }
