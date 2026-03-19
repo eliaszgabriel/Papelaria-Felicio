@@ -3,12 +3,9 @@ import { cookies } from "next/headers";
 import jwt from "jsonwebtoken";
 import { validateCsrfRequest } from "@/lib/csrf";
 import { getPostgresPool, hasPostgresConfig } from "@/lib/postgres";
+import { getJwtSecret } from "@/lib/runtimeSecrets";
 
 export const runtime = "nodejs";
-
-const JWT_SECRET =
-  process.env.JWT_SECRET ||
-  (process.env.NODE_ENV !== "production" ? "dev-secret-troque-isso" : "");
 
 type SessionPayload = {
   sub: string | number;
@@ -30,15 +27,16 @@ type WishlistPostBody = {
 };
 
 async function getUserId(): Promise<number | null> {
+  const jwtSecret = getJwtSecret();
   const cookieStore = await cookies();
   const token = cookieStore.get("pf_session")?.value;
 
-  if (!token) {
+  if (!token || !jwtSecret) {
     return null;
   }
 
   try {
-    const payload = jwt.verify(token, JWT_SECRET) as SessionPayload;
+    const payload = jwt.verify(token, jwtSecret) as SessionPayload;
     return Number(payload.sub);
   } catch {
     return null;

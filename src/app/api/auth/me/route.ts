@@ -2,10 +2,8 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import jwt from "jsonwebtoken";
 import { getPostgresPool, hasPostgresConfig } from "@/lib/postgres";
+import { getJwtSecret } from "@/lib/runtimeSecrets";
 
-const JWT_SECRET =
-  process.env.JWT_SECRET ||
-  (process.env.NODE_ENV !== "production" ? "dev-secret-troque-isso" : "");
 
 type SessionPayload = {
   sub: string | number;
@@ -23,7 +21,8 @@ type UserRow = {
 };
 
 export async function GET() {
-  if (!JWT_SECRET) {
+  const jwtSecret = getJwtSecret();
+  if (!jwtSecret) {
     return NextResponse.json(
       { ok: false, reason: "server_not_configured" },
       { status: 500 },
@@ -38,7 +37,7 @@ export async function GET() {
   }
 
   try {
-    const payload = jwt.verify(token, JWT_SECRET) as SessionPayload;
+    const payload = jwt.verify(token, jwtSecret) as SessionPayload;
     let user: UserRow | undefined;
 
     if (hasPostgresConfig()) {

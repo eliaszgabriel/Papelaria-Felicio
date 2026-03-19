@@ -4,19 +4,21 @@
   "private": true,
   "scripts": {
     "dev": "next dev --webpack",
-    "build": "next build",
+    "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "verify": "npm run lint && npm run typecheck",
-    "db:migrate:postgres": "node scripts/migrate-sqlite-to-postgres.mjs"
+    "db:migrate:postgres": "node scripts/migrate-sqlite-to-postgres.mjs",
+    "security:check": "bash scripts/security-check.sh",
+    "security:audit": "npm audit --audit-level=moderate"
   },
   "dependencies": {
     "@types/pg": "^8.18.0",
     "bcryptjs": "^3.0.3",
     "better-sqlite3": "^12.6.0",
     "jsonwebtoken": "^9.0.3",
-    "next": "16.1.1",
+    "next": "^16.2.0",
     "pg": "^8.20.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
@@ -31,7 +33,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "16.1.1",
+    "eslint-config-next": "^16.2.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

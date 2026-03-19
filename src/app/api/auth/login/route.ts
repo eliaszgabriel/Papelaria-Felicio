@@ -4,10 +4,7 @@ import { NextResponse } from "next/server";
 import { validateCsrfRequest } from "@/lib/csrf";
 import { getUserByEmail } from "@/lib/authStore";
 import { consumeRateLimit, getRequestIp } from "@/lib/rateLimit";
-
-const JWT_SECRET =
-  process.env.JWT_SECRET ||
-  (process.env.NODE_ENV !== "production" ? "dev-secret-troque-isso" : "");
+import { requireJwtSecret } from "@/lib/runtimeSecrets";
 
 type LoginBody = {
   email?: string;
@@ -27,13 +24,6 @@ export async function POST(req: Request) {
   const csrfError = validateCsrfRequest(req);
   if (csrfError) {
     return csrfError;
-  }
-
-  if (!JWT_SECRET) {
-    return NextResponse.json(
-      { ok: false, reason: "server_not_configured" },
-      { status: 500 },
-    );
   }
 
   const body = (await req.json().catch(() => null)) as LoginBody | null;
@@ -90,7 +80,7 @@ export async function POST(req: Request) {
     return NextResponse.json(
       {
         ok: false,
-        reason: "Confirme seu email antes de entrar. Se precisar, peça um novo link.",
+        reason: "Confirme seu email antes de entrar. Se precisar, peca um novo link.",
         requiresEmailVerification: true,
       },
       { status: 403 },
@@ -99,7 +89,7 @@ export async function POST(req: Request) {
 
   const token = jwt.sign(
     { sub: String(user.id), email: user.email },
-    JWT_SECRET,
+    requireJwtSecret(),
     { expiresIn: "30d" },
   );
 

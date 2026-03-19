@@ -10,6 +10,32 @@ export const runtime = "nodejs";
 const MAX_SIZE_BYTES = 3 * 1024 * 1024;
 const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 
+function detectImageExtension(buffer: Buffer) {
+  if (
+    buffer.length >= 3 &&
+    buffer[0] === 0xff &&
+    buffer[1] === 0xd8 &&
+    buffer[2] === 0xff
+  ) {
+    return "jpg";
+  }
+
+  const pngSignature = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
+  if (buffer.length >= 8 && pngSignature.every((value, index) => buffer[index] === value)) {
+    return "png";
+  }
+
+  if (
+    buffer.length >= 12 &&
+    buffer.subarray(0, 4).toString("ascii") === "RIFF" &&
+    buffer.subarray(8, 12).toString("ascii") === "WEBP"
+  ) {
+    return "webp";
+  }
+
+  return null;
+}
+
 export async function POST(req: Request) {
   const csrfError = validateCsrfRequest(req);
   if (csrfError) {
@@ -48,26 +74,43 @@ export async function POST(req: Request) {
       );
     }
 
-    const ext =
+    const uploadDir = path.join(process.cwd(), "public", "uploads", "products");
+
+    await fs.mkdir(uploadDir, { recursive: true });
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
+    const detectedExt = detectImageExtension(buffer);
+
+    if (!detectedExt) {
+      return NextResponse.json(
+        { ok: false, error: "Conteudo de imagem invalido." },
+        { status: 400 },
+      );
+    }
+
+    const expectedExt =
       file.type === "image/jpeg"
         ? "jpg"
         : file.type === "image/png"
           ? "png"
           : "webp";
 
-    const filename = `${crypto.randomUUID()}.${ext}`;
-    const uploadDir = path.join(process.cwd(), "public", "uploads", "products");
+    if (detectedExt !== expectedExt) {
+      return NextResponse.json(
+        { ok: false, error: "Tipo do arquivo nao confere com o conteudo enviado." },
+        { status: 400 },
+      );
+    }
 
-    await fs.mkdir(uploadDir, { recursive: true });
-    const bytes = await file.arrayBuffer();
-    await fs.writeFile(path.join(uploadDir, filename), Buffer.from(bytes));
+    const filename = `${crypto.randomUUID()}.${detectedExt}`;
+    await fs.writeFile(path.join(uploadDir, filename), buffer);
 
     return NextResponse.json({
       ok: true,
       url: `/uploads/products/${filename}`,
     });
   } catch (error) {
-    console.error(error);
+    console.error("[upload] error", error instanceof Error ? error.message : error);
     return NextResponse.json(
       { ok: false, error: "Falha no upload." },
       { status: 500 },

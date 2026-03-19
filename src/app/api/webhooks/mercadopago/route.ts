@@ -1,3 +1,4 @@
+import crypto from "crypto";
 import { NextResponse } from "next/server";
 
 import { sendPaidEmailIfNeeded } from "@/lib/orderNotifications";
@@ -5,6 +6,7 @@ import { markOrderPaid } from "@/lib/orderPayments";
 import { getMercadoPagoPayment } from "@/lib/mercadoPago";
 import { sendNewOrderAdminEmailByOrderId } from "@/lib/adminOrderNotifications";
 import { syncApprovedOrderToTiny } from "@/lib/tinyOrders";
+import { requireConfiguredSecret } from "@/lib/runtimeSecrets";
 
 export const runtime = "nodejs";
 
@@ -25,17 +27,69 @@ function getPaymentId(req: Request, body: unknown) {
   return "";
 }
 
-export async function POST(req: Request) {
-  const url = new URL(req.url);
-  const webhookSecret = process.env.MERCADOPAGO_WEBHOOK_SECRET || "";
-  const requestToken = url.searchParams.get("token") || "";
+function safeEqualText(left: string, right: string) {
+  const leftBuffer = Buffer.from(left);
+  const rightBuffer = Buffer.from(right);
+  if (leftBuffer.length !== rightBuffer.length) {
+    return false;
+  }
+  return crypto.timingSafeEqual(leftBuffer, rightBuffer);
+}
 
-  if (webhookSecret && requestToken !== webhookSecret) {
-    return NextResponse.json({ ok: false, error: "invalid_token" }, { status: 401 });
+function verifyMercadoPagoSignature(
+  webhookSecret: string,
+  xSignature: string | null,
+  xRequestId: string | null,
+  paymentId: string,
+) {
+  if (!xSignature || !xRequestId || !paymentId) {
+    return false;
   }
 
+  const parts = xSignature.split(",").reduce<Record<string, string>>((acc, item) => {
+    const [rawKey, rawValue] = item.split("=");
+    const key = String(rawKey || "").trim();
+    const value = String(rawValue || "").trim();
+    if (key && value) {
+      acc[key] = value;
+    }
+    return acc;
+  }, {});
+
+  const ts = parts.ts;
+  const hash = parts.v1;
+  if (!ts || !hash) {
+    return false;
+  }
+
+  const manifest = `id:${paymentId};request-id:${xRequestId};ts:${ts};`;
+  const expectedHash = crypto
+    .createHmac("sha256", webhookSecret)
+    .update(manifest)
+    .digest("hex");
+
+  return safeEqualText(expectedHash, hash);
+}
+
+export async function POST(req: Request) {
+  const url = new URL(req.url);
+  const webhookSecret = requireConfiguredSecret("MERCADOPAGO_WEBHOOK_SECRET");
+  const requestToken = url.searchParams.get("token") || "";
+
   const body = await req.json().catch(() => null);
-  const paymentId = getPaymentId(req, body);
+  const paymentId = String(getPaymentId(req, body) || "");
+
+  const xSignature = req.headers.get("x-signature");
+  const xRequestId = req.headers.get("x-request-id");
+  const hasMercadoPagoSignature = Boolean(xSignature && xRequestId && paymentId);
+  const validSignature = hasMercadoPagoSignature
+    ? verifyMercadoPagoSignature(webhookSecret, xSignature, xRequestId, paymentId)
+    : false;
+  const validToken = requestToken ? safeEqualText(requestToken, webhookSecret) : false;
+
+  if (!validSignature && !validToken) {
+    return NextResponse.json({ ok: false, error: "invalid_signature" }, { status: 401 });
+  }
 
   if (!paymentId) {
     return NextResponse.json({ ok: true, ignored: true, reason: "missing_payment_id" });
@@ -66,7 +120,7 @@ export async function POST(req: Request) {
       orderId,
       paidBy: "mercadopago",
       paymentPatch: {
-        mercadoPagoPaymentId: payment.id,
+        mercadoPagoPaymentId: String(payment.id),
         mercadoPagoPaymentMethodId: payment.payment_method_id ?? null,
         installments: payment.installments ?? null,
         paymentStatus: payment.status ?? null,

@@ -1,9 +1,11 @@
+import crypto from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { sendPaidEmailIfNeeded } from "@/lib/orderNotifications";
 import { markOrderPaid } from "@/lib/orderPayments";
 import { pushinpayGetTransaction } from "@/lib/pushinpay";
 import { getPostgresPool, hasPostgresConfig } from "@/lib/postgres";
 import { syncApprovedOrderToTiny } from "@/lib/tinyOrders";
+import { requireConfiguredSecret } from "@/lib/runtimeSecrets";
 
 export const runtime = "nodejs";
 
@@ -21,10 +23,17 @@ type ProcessPaymentResult =
     };
 
 export async function POST(req: NextRequest) {
-  const expectedToken = process.env.PUSHINPAY_WEBHOOK_SECRET || "";
+  const expectedToken = requireConfiguredSecret("PUSHINPAY_WEBHOOK_SECRET");
   const receivedToken = req.nextUrl.searchParams.get("token") || "";
 
-  if (expectedToken && receivedToken !== expectedToken) {
+  const expectedBuffer = Buffer.from(expectedToken);
+  const receivedBuffer = Buffer.from(receivedToken);
+  const tokenMatches =
+    expectedBuffer.length === receivedBuffer.length &&
+    expectedBuffer.length > 0 &&
+    crypto.timingSafeEqual(expectedBuffer, receivedBuffer);
+
+  if (!tokenMatches) {
     return NextResponse.json(
       { ok: false, error: "forbidden" },
       { status: 403 },
@@ -72,9 +81,10 @@ export async function POST(req: NextRequest) {
               stockdeductedat AS "stockDeductedAt",
               paidnotifiedat AS "paidNotifiedAt"
        FROM orders
-       WHERE paymentjson LIKE $1
+       WHERE paymentjson IS NOT NULL
+         AND paymentjson::jsonb ->> 'pushinpayTransactionId' = $1
        LIMIT 1`,
-      [`%${body.id}%`],
+      [body.id],
     );
     fallbackRow = result.rows[0];
   } else {

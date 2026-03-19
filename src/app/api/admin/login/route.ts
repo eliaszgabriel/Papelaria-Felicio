@@ -3,8 +3,12 @@ import bcrypt from "bcryptjs";
 import { ADMIN_COOKIE_NAME, createAdminToken } from "@/lib/adminAuth";
 import { validateCsrfRequest } from "@/lib/csrf";
 import { consumeRateLimit, getRequestIp } from "@/lib/rateLimit";
+import {
+  getAdminSessionSecret,
+} from "@/lib/runtimeSecrets";
 
 export const runtime = "nodejs";
+
 
 export async function POST(req: Request) {
   const csrfError = validateCsrfRequest(req);
@@ -23,10 +27,7 @@ export async function POST(req: Request) {
     process.env.NODE_ENV !== "production"
       ? String(process.env.ADMIN_KEY || "").trim()
       : "";
-  const adminSessionSecret =
-    process.env.ADMIN_SESSION_SECRET ||
-    process.env.JWT_SECRET ||
-    (process.env.NODE_ENV !== "production" ? "dev-secret-troque-isso" : "");
+  const adminSessionSecret = getAdminSessionSecret();
   const hasUserPasswordAuth = Boolean(adminUsername && adminPasswordHash);
   const hasLegacyKey = Boolean(adminKey);
 
@@ -39,9 +40,9 @@ export async function POST(req: Request) {
 
   const rateLimit = await consumeRateLimit({
     scope: "admin-login",
-    key: getRequestIp(req),
-    limit: 8,
-    windowMs: 15 * 60 * 1000,
+    key: `${getRequestIp(req)}:${String(username || "").trim().toLowerCase() || "sem-usuario"}`,
+    limit: 5,
+    windowMs: 30 * 60 * 1000,
   });
 
   if (!rateLimit.ok) {

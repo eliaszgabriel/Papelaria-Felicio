@@ -4,6 +4,7 @@ import { sendEmail } from "@/lib/email";
 import { validateCsrfRequest } from "@/lib/csrf";
 import { consumeRateLimit, getRequestIp } from "@/lib/rateLimit";
 import { createPasswordResetToken } from "@/lib/passwordReset";
+import { escapeHtml, sanitizeEmailUrl } from "@/lib/htmlEscape";
 
 type UserRow = {
   email: string;
@@ -41,7 +42,7 @@ export async function POST(req: Request) {
 
   if (!email || !email.includes("@")) {
     return NextResponse.json(
-      { ok: false, reason: "Informe um email válido." },
+      { ok: false, reason: "Informe um email valido." },
       { status: 400 },
     );
   }
@@ -52,19 +53,20 @@ export async function POST(req: Request) {
     const siteUrl = process.env.SITE_URL || new URL(req.url).origin;
     const token = createPasswordResetToken(user.email, user.password_hash);
     const resetUrl = `${siteUrl}/redefinir-senha?token=${encodeURIComponent(token)}`;
-    const customerName = user.name?.trim() || "Oi";
+    const customerName = escapeHtml(user.name?.trim() || "Oi");
+    const safeResetUrl = sanitizeEmailUrl(resetUrl);
 
     await sendEmail({
       to: user.email,
       subject: "Redefina sua senha - Papelaria Felicio",
       html: `
         <div style="font-family:Arial,sans-serif;line-height:1.6">
-          <h2>Redefinição de senha</h2>
+          <h2>Redefinicao de senha</h2>
           <p>${customerName}, recebemos um pedido para redefinir a senha da sua conta.</p>
           <p>Para criar uma nova senha, use o link abaixo:</p>
-          <p><a href="${resetUrl}">${resetUrl}</a></p>
+          <p><a href="${safeResetUrl}">${escapeHtml(safeResetUrl)}</a></p>
           <p>Esse link expira em 1 hora.</p>
-          <p>Se você não pediu essa alteração, pode ignorar este email.</p>
+          <p>Se voce nao pediu essa alteracao, pode ignorar este email.</p>
           <hr />
           <p style="color:#666;font-size:12px">Papelaria Felicio</p>
         </div>

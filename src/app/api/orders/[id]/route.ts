@@ -4,12 +4,10 @@ import jwt from "jsonwebtoken";
 import { verifyOrderLookupToken } from "@/lib/orderAccess";
 import { isAdminSession } from "@/lib/adminAuth";
 import { getPostgresPool, hasPostgresConfig } from "@/lib/postgres";
+import { getJwtSecret } from "@/lib/runtimeSecrets";
 
 export const runtime = "nodejs";
 
-const JWT_SECRET =
-  process.env.JWT_SECRET ||
-  (process.env.NODE_ENV !== "production" ? "dev-secret-troque-isso" : "");
 
 type OrderRow = Record<string, unknown> & {
   customerJson: string;
@@ -59,11 +57,12 @@ function rowToOrder(row: OrderRow) {
 
 async function getSessionUserId() {
   try {
-    if (!JWT_SECRET) return null;
+    const jwtSecret = getJwtSecret();
+    if (!jwtSecret) return null;
     const cookieStore = await cookies();
     const token = cookieStore.get("pf_session")?.value;
     if (!token) return null;
-    const payload = jwt.verify(token, JWT_SECRET) as { sub?: string | number };
+    const payload = jwt.verify(token, jwtSecret) as { sub?: string | number };
     return Number(payload.sub);
   } catch {
     return null;

@@ -22,16 +22,16 @@ import { sendEmail } from "@/lib/email";
 import { createEmailVerificationToken } from "@/lib/emailVerification";
 import { getPostgresPool, hasPostgresConfig } from "@/lib/postgres";
 import { getSiteUrl } from "@/lib/siteUrl";
+import { escapeHtml, sanitizeEmailUrl } from "@/lib/htmlEscape";
+import {
+  requireConfiguredSecret,
+  requireJwtSecret,
+} from "@/lib/runtimeSecrets";
 
 export const runtime = "nodejs";
-const JWT_SECRET =
-  process.env.JWT_SECRET ||
-  (process.env.NODE_ENV !== "production" ? "dev-secret-troque-isso" : "");
 
 function ensureJwtSecret() {
-  if (!JWT_SECRET) {
-    throw new Error("jwt_secret_not_configured");
-  }
+  requireJwtSecret();
 }
 
 function createServerOrderId() {
@@ -103,7 +103,7 @@ async function getSessionEmailFromCookies() {
   if (!sessionToken) return "";
 
   try {
-    const payload = jwt.verify(sessionToken, JWT_SECRET) as {
+    const payload = jwt.verify(sessionToken, requireJwtSecret()) as {
       email?: string;
     };
     return normEmail(payload.email);
@@ -268,7 +268,7 @@ async function getAuthorizedEmail(req: Request) {
 
   if (sessionToken) {
     try {
-      const payload = jwt.verify(sessionToken, JWT_SECRET) as {
+      const payload = jwt.verify(sessionToken, requireJwtSecret()) as {
         email?: string;
       };
       const sessionEmail = normEmail(payload.email);
@@ -650,7 +650,7 @@ export async function POST(req: Request) {
 
   if (paymentMethod === "pix_auto") {
     const baseUrl = getPublicBaseUrl(req);
-    const webhookSecret = process.env.PUSHINPAY_WEBHOOK_SECRET || "";
+    const webhookSecret = requireConfiguredSecret("PUSHINPAY_WEBHOOK_SECRET");
     const webhookUrl = webhookSecret
       ? `${baseUrl}/api/webhooks/pushinpay?token=${encodeURIComponent(webhookSecret)}`
       : `${baseUrl}/api/webhooks/pushinpay`;
@@ -740,7 +740,7 @@ export async function POST(req: Request) {
 
   if (paymentMethod === "card_mercadopago") {
     const baseUrl = getPublicBaseUrl(req);
-    const webhookSecret = process.env.MERCADOPAGO_WEBHOOK_SECRET || "";
+    const webhookSecret = requireConfiguredSecret("MERCADOPAGO_WEBHOOK_SECRET");
     const webhookUrl = webhookSecret
       ? `${baseUrl}/api/webhooks/mercadopago?token=${encodeURIComponent(webhookSecret)}`
       : `${baseUrl}/api/webhooks/mercadopago`;
@@ -870,8 +870,10 @@ export async function POST(req: Request) {
       const siteUrl = process.env.SITE_URL || new URL(req.url).origin;
       const token = createEmailVerificationToken(customerEmail);
       const verifyUrl = `${siteUrl}/verificar-email?token=${encodeURIComponent(token)}`;
-      const customerName =
-        String(userResolution.customer?.name || "").trim() || "Oi";
+      const customerName = escapeHtml(
+        String(userResolution.customer?.name || "").trim() || "Oi",
+      );
+      const safeVerifyUrl = sanitizeEmailUrl(verifyUrl);
 
       await sendEmail({
         to: customerEmail,
@@ -881,7 +883,7 @@ export async function POST(req: Request) {
             <h2>Seu pedido foi recebido</h2>
             <p>${customerName}, também criamos sua conta para facilitar seus próximos pedidos.</p>
             <p>Para ativar o acesso, confirme seu email neste link:</p>
-            <p><a href="${verifyUrl}">${verifyUrl}</a></p>
+            <p><a href="${safeVerifyUrl}">${escapeHtml(safeVerifyUrl)}</a></p>
             <p>Depois disso, você poderá definir ou recuperar sua senha quando quiser.</p>
             <hr />
             <p style="color:#666;font-size:12px">Papelaria Felicio</p>

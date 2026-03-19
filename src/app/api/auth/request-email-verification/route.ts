@@ -4,6 +4,7 @@ import { sendEmail } from "@/lib/email";
 import { validateCsrfRequest } from "@/lib/csrf";
 import { consumeRateLimit, getRequestIp } from "@/lib/rateLimit";
 import { createEmailVerificationToken } from "@/lib/emailVerification";
+import { escapeHtml, sanitizeEmailUrl } from "@/lib/htmlEscape";
 
 type UserRow = {
   email: string;
@@ -36,7 +37,7 @@ export async function POST(req: Request) {
 
   if (!email || !email.includes("@")) {
     return NextResponse.json(
-      { ok: false, reason: "Informe um email válido." },
+      { ok: false, reason: "Informe um email valido." },
       { status: 400 },
     );
   }
@@ -47,16 +48,18 @@ export async function POST(req: Request) {
     const siteUrl = process.env.SITE_URL || new URL(req.url).origin;
     const token = createEmailVerificationToken(user.email);
     const verifyUrl = `${siteUrl}/verificar-email?token=${encodeURIComponent(token)}`;
+    const safeVerifyUrl = sanitizeEmailUrl(verifyUrl);
+    const safeName = escapeHtml(user.name?.trim() || "Oi");
 
     await sendEmail({
       to: user.email,
       subject: "Confirme seu email - Papelaria Felicio",
       html: `
         <div style="font-family:Arial,sans-serif;line-height:1.6">
-          <h2>Confirmação de email</h2>
-          <p>${user.name?.trim() || "Oi"}, falta só confirmar seu email para ativar sua conta.</p>
+          <h2>Confirmacao de email</h2>
+          <p>${safeName}, falta so confirmar seu email para ativar sua conta.</p>
           <p>Use o link abaixo para concluir:</p>
-          <p><a href="${verifyUrl}">${verifyUrl}</a></p>
+          <p><a href="${safeVerifyUrl}">${escapeHtml(safeVerifyUrl)}</a></p>
           <p>Esse link expira em 24 horas.</p>
           <hr />
           <p style="color:#666;font-size:12px">Papelaria Felicio</p>

@@ -2,10 +2,11 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { createUser, getUserByCpf, getUserByEmail } from "@/lib/authStore";
 import { validateCsrfRequest } from "@/lib/csrf";
-import { isValidCPF, onlyDigits } from "@/lib/validators";
+import { isValidCPF, onlyDigits, validatePassword } from "@/lib/validators";
 import { consumeRateLimit, getRequestIp } from "@/lib/rateLimit";
 import { sendEmail } from "@/lib/email";
 import { createEmailVerificationToken } from "@/lib/emailVerification";
+import { escapeHtml, sanitizeEmailUrl } from "@/lib/htmlEscape";
 
 export async function POST(req: Request) {
   const csrfError = validateCsrfRequest(req);
@@ -39,21 +40,22 @@ export async function POST(req: Request) {
 
   if (!email || !email.includes("@")) {
     return NextResponse.json(
-      { ok: false, reason: "Email inválido." },
+      { ok: false, reason: "Email invalido." },
       { status: 400 },
     );
   }
 
-  if (!password || password.length < 6) {
+  const passwordValidation = validatePassword(password);
+  if (!passwordValidation.valid) {
     return NextResponse.json(
-      { ok: false, reason: "Senha precisa ter 6+ caracteres." },
+      { ok: false, reason: passwordValidation.reason },
       { status: 400 },
     );
   }
 
   if (cpfRaw && !isValidCPF(cpfRaw)) {
     return NextResponse.json(
-      { ok: false, reason: "CPF inválido." },
+      { ok: false, reason: "CPF invalido." },
       { status: 400 },
     );
   }
@@ -61,7 +63,7 @@ export async function POST(req: Request) {
   const existing = await getUserByEmail(email);
   if (existing) {
     return NextResponse.json(
-      { ok: false, reason: "Email já cadastrado." },
+      { ok: false, reason: "Email ja cadastrado." },
       { status: 409 },
     );
   }
@@ -70,7 +72,7 @@ export async function POST(req: Request) {
     const cpfTaken = await getUserByCpf(cpfRaw);
     if (cpfTaken) {
       return NextResponse.json(
-        { ok: false, reason: "CPF já cadastrado." },
+        { ok: false, reason: "CPF ja cadastrado." },
         { status: 409 },
       );
     }
@@ -92,15 +94,18 @@ export async function POST(req: Request) {
 
   let emailDeliveryFailed = false;
   try {
+    const safeName = escapeHtml(name || "Oi");
+    const safeVerifyUrl = sanitizeEmailUrl(verifyUrl);
+
     await sendEmail({
       to: email,
       subject: "Confirme seu email - Papelaria Felicio",
       html: `
         <div style="font-family:Arial,sans-serif;line-height:1.6">
           <h2>Bem-vinda a Papelaria Felicio</h2>
-          <p>${name || "Oi"}, sua conta foi criada com sucesso.</p>
-          <p>Agora só falta confirmar seu email:</p>
-          <p><a href="${verifyUrl}">${verifyUrl}</a></p>
+          <p>${safeName}, sua conta foi criada com sucesso.</p>
+          <p>Agora so falta confirmar seu email:</p>
+          <p><a href="${safeVerifyUrl}">${escapeHtml(safeVerifyUrl)}</a></p>
           <p>Esse link expira em 24 horas.</p>
           <hr />
           <p style="color:#666;font-size:12px">Papelaria Felicio</p>

@@ -2,10 +2,8 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import jwt from "jsonwebtoken";
 import { getPostgresPool, hasPostgresConfig } from "@/lib/postgres";
+import { getJwtSecret } from "@/lib/runtimeSecrets";
 
-const JWT_SECRET =
-  process.env.JWT_SECRET ||
-  (process.env.NODE_ENV !== "production" ? "dev-secret-troque-isso" : "");
 
 function safeParse<T = unknown>(v: unknown): T | null {
   if (!v) return null;
@@ -17,7 +15,8 @@ function safeParse<T = unknown>(v: unknown): T | null {
 }
 
 export async function GET() {
-  if (!JWT_SECRET) {
+  const jwtSecret = getJwtSecret();
+  if (!jwtSecret) {
     return NextResponse.json(
       { ok: false, reason: "server_not_configured" },
       { status: 500 },
@@ -29,17 +28,17 @@ export async function GET() {
 
   if (!token) {
     return NextResponse.json(
-      { ok: false, reason: "Não autenticado." },
+      { ok: false, reason: "Nao autenticado." },
       { status: 401 },
     );
   }
 
   let payload: { sub?: string | number } | null = null;
   try {
-    payload = jwt.verify(token, JWT_SECRET) as { sub?: string | number };
+    payload = jwt.verify(token, jwtSecret) as { sub?: string | number };
   } catch {
     return NextResponse.json(
-      { ok: false, reason: "Sessão inválida." },
+      { ok: false, reason: "Sessao invalida." },
       { status: 401 },
     );
   }

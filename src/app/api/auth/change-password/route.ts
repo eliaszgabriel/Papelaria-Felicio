@@ -4,12 +4,11 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { validateCsrfRequest } from "@/lib/csrf";
 import { getUserById, updateUserPassword } from "@/lib/authStore";
+import { getJwtSecret } from "@/lib/runtimeSecrets";
+import { validatePassword } from "@/lib/validators";
 
 export const runtime = "nodejs";
 
-const JWT_SECRET =
-  process.env.JWT_SECRET ||
-  (process.env.NODE_ENV !== "production" ? "dev-secret-troque-isso" : "");
 
 type SessionPayload = {
   sub: string | number;
@@ -31,7 +30,8 @@ export async function POST(req: Request) {
     return csrfError;
   }
 
-  if (!JWT_SECRET) {
+  const jwtSecret = getJwtSecret();
+  if (!jwtSecret) {
     return NextResponse.json(
       { ok: false, reason: "server_not_configured" },
       { status: 500 },
@@ -52,16 +52,17 @@ export async function POST(req: Request) {
   const currentPassword = String(body?.currentPassword || "");
   const newPassword = String(body?.newPassword || "");
 
-  if (!newPassword || newPassword.length < 6) {
+  const passwordValidation = validatePassword(newPassword);
+  if (!passwordValidation.valid) {
     return NextResponse.json(
-      { ok: false, reason: "A nova senha deve ter no minimo 6 caracteres." },
+      { ok: false, reason: passwordValidation.reason },
       { status: 400 },
     );
   }
 
   let payload: SessionPayload;
   try {
-    payload = jwt.verify(token, JWT_SECRET) as SessionPayload;
+    payload = jwt.verify(token, jwtSecret) as SessionPayload;
   } catch {
     return NextResponse.json(
       { ok: false, reason: "unauthorized" },

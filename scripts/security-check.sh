@@ -1,0 +1,50 @@
+#!/bin/bash
+
+set -u
+
+echo "Executando verificacoes de seguranca..."
+echo
+
+echo "1. Procurando possiveis secrets hardcoded..."
+if grep -RInE --include="*.ts" --include="*.tsx" --include="*.js" --include="*.mjs" \
+  "(password.*=|secret.*=|apikey.*=|token.*=)" src scripts 2>/dev/null | grep -vi "process.env" | grep -vi "secret_not_configured" | grep -vi "token_not_configured"; then
+  echo "ATENCAO: revise as linhas acima."
+else
+  echo "OK: nenhum secret hardcoded encontrado pelo filtro basico"
+fi
+echo
+
+echo "2. Auditando dependencias npm..."
+npm audit --audit-level=moderate || true
+echo
+
+echo "3. Verificando .gitignore..."
+if grep -Eq "^\.env\*?$|^\.env\.\*$" .gitignore; then
+  echo "OK: padroes de .env estao no .gitignore"
+else
+  echo "ATENCAO: adicione .env* ao .gitignore"
+fi
+echo
+
+echo "4. Verificando permissoes de arquivos sensiveis..."
+for file in .env .env.local .env.production data/*.sqlite; do
+  if [ -f "$file" ]; then
+    perms=$(stat -c "%a" "$file" 2>/dev/null || stat -f "%A" "$file" 2>/dev/null || echo "unknown")
+    if [ "$perms" != "600" ]; then
+      echo "WARN: $file tem permissoes $perms (ideal: 600)"
+    else
+      echo "OK: $file"
+    fi
+  fi
+done
+echo
+
+echo "5. Procurando headers de seguranca no Next config..."
+if grep -q "Content-Security-Policy" next.config.ts; then
+  echo "OK: security headers configurados no next.config.ts"
+else
+  echo "WARN: security headers nao encontrados no next.config.ts"
+fi
+echo
+
+echo "Verificacao concluida."

@@ -49,3 +49,68 @@ export function maskCEP(v: string) {
   if (d.length <= 5) return d;
   return `${d.slice(0, 5)}-${d.slice(5)}`;
 }
+
+export type PasswordValidationResult =
+  | { valid: true }
+  | { valid: false; reason: string };
+
+export function validatePassword(password: string): PasswordValidationResult {
+  if (!password || typeof password !== "string") {
+    return { valid: false, reason: "Senha e obrigatoria." };
+  }
+
+  if (password.length < 10) {
+    return {
+      valid: false,
+      reason: "Senha deve ter pelo menos 10 caracteres.",
+    };
+  }
+
+  if (password.length > 128) {
+    return {
+      valid: false,
+      reason: "Senha muito longa. Use ate 128 caracteres.",
+    };
+  }
+
+  const hasLower = /[a-z]/.test(password);
+  const hasUpper = /[A-Z]/.test(password);
+  const hasNumber = /[0-9]/.test(password);
+  const hasSpecial = /[^A-Za-z0-9]/.test(password);
+  const complexity = [hasLower, hasUpper, hasNumber, hasSpecial].filter(Boolean).length;
+
+  if (complexity < 3) {
+    return {
+      valid: false,
+      reason:
+        "Senha deve combinar pelo menos 3 destes grupos: minusculas, maiusculas, numeros e simbolos.",
+    };
+  }
+
+  const lower = password.toLowerCase();
+  const commonPatterns = [
+    "123456",
+    "12345678",
+    "123456789",
+    "password",
+    "senha123",
+    "qwerty",
+    "admin123",
+  ];
+
+  if (commonPatterns.some((pattern) => lower.includes(pattern))) {
+    return {
+      valid: false,
+      reason: "Senha muito comum. Escolha uma combinacao mais forte.",
+    };
+  }
+
+  if (/(.)\1{2,}/.test(password)) {
+    return {
+      valid: false,
+      reason: "Evite repetir o mesmo caractere varias vezes seguidas na senha.",
+    };
+  }
+
+  return { valid: true };
+}
