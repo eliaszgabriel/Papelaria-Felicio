@@ -37,7 +37,7 @@
 - [ ] confirmar `STORE_ORDER_ALERT_EMAILS`
 - [ ] confirmar `OLIST_TOKEN`
 - [ ] confirmar `OLIST_SYNC_SECRET`
-- [ ] configurar secrets `SITE_URL` e `OLIST_SYNC_SECRET` no GitHub
+- [ ] validar cron da VPS para sync do Tiny/Olist
 
 ### Ecommerce
 
@@ -68,7 +68,7 @@
 - [ ] validar importacao por lote da Tiny/Olist
 - [ ] validar importacao por SKU da Tiny/Olist
 - [ ] validar exclusao de produto importado sem reimportacao automatica
-- [ ] validar workflow `.github/workflows/olist-sync.yml`
+- [ ] validar cron da VPS do sync e conferir log de execucao
 
 ### SEO e indexacao
 

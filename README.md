@@ -269,38 +269,27 @@ URL sugerida no ambiente publicado:
 https://www.papelariafelicio.com.br/api/webhooks/olist/stock?secret=SEU_SEGREDO
 ```
 
-## GitHub Actions para sync do Tiny
+## Cron recomendado na VPS
 
-O projeto ja inclui o workflow:
+Para o sync do Tiny, o caminho mais confiavel e usar cron na propria VPS.
 
-```text
-.github/workflows/olist-sync.yml
+Exemplo:
+
+```bash
+*/5 * * * * curl -s -X POST "https://www.papelariafelicio.com.br/api/cron/olist/sync" -H "x-olist-sync-secret: SEU_SEGREDO" -H "Content-Type: application/json" >/dev/null 2>&1
 ```
 
-Ele roda:
+Se quiser acompanhar as execucoes, use log:
 
-- a cada 5 minutos
-- e tambem manualmente via `workflow_dispatch`
+```bash
+*/5 * * * * echo "[$(date '+\%Y-\%m-\%d \%H:\%M:\%S')] olist sync start" >> /var/log/papelaria-olist-sync.log && curl -s -X POST "https://www.papelariafelicio.com.br/api/cron/olist/sync" -H "x-olist-sync-secret: SEU_SEGREDO" -H "Content-Type: application/json" >> /var/log/papelaria-olist-sync.log 2>&1
+```
 
-Para funcionar no GitHub, configure estes secrets no repositorio:
+Para verificar:
 
-- `SITE_URL`
-  exemplo: `https://www.papelariafelicio.com.br`
-- `OLIST_SYNC_SECRET`
-  o mesmo valor usado no ambiente publicado
-
-Se quiser aliviar mais o Tiny depois, voce pode aumentar esse intervalo, mas para itens com estoque baixo o ideal e manter a sincronizacao curta.
-
-
-roda automaticamente:
-
-- a cada 15 minutos
-- e tambem pode ser executado manualmente
-
-Secrets necessarios no GitHub:
-
-- `SITE_URL`
-- `ORDER_CLEANUP_SECRET`
+```bash
+tail -n 20 /var/log/papelaria-olist-sync.log
+```
 
 ## Alerta de novo pedido
 
