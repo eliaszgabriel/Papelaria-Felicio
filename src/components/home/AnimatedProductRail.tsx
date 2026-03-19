@@ -36,38 +36,6 @@ export default function AnimatedProductRail({
         </div>
       </div>
 
-      <div className="md:hidden">
-        <div className="rounded-[2rem] border border-white/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.88),rgba(255,247,250,0.8))] px-4 py-5 shadow-soft">
-          <div className="inline-flex items-center gap-2 rounded-full border border-white/75 bg-white/80 px-4 py-2 text-[10px] font-extrabold uppercase tracking-[0.18em] text-felicio-ink/65">
-            Vitrine da papelaria
-          </div>
-          <h2 className="mt-4 max-w-[14rem] text-[2rem] font-extrabold tracking-tight text-felicio-ink/85">
-            Produtos desfilando no celular
-          </h2>
-          <p className="mt-2 max-w-[20rem] text-sm leading-relaxed text-felicio-ink/63">
-            Uma fileira leve de produtos para arrastar com o dedo e descobrir a vitrine com calma.
-          </p>
-
-          <div className="mt-4 flex items-center justify-between gap-3">
-            <div className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-felicio-ink/45">
-              Arraste para o lado
-            </div>
-            <div className="h-px flex-1 bg-gradient-to-r from-felicio-pink/30 to-transparent" />
-          </div>
-
-          <div className="mt-4 flex gap-3 overflow-x-auto pb-2 pr-1 snap-x snap-mandatory [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            {items.map((product) => (
-              <div
-                key={product.id}
-                className="w-[16rem] min-w-[16rem] snap-start first:w-[17rem] first:min-w-[17rem]"
-              >
-                <ProductCard product={product} compact />
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
       <div className="product-rail-mask mt-6 hidden md:block">
         <div className="product-rail-track">
           {duplicated.map((product, index) => (
