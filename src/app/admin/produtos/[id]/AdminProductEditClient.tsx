@@ -230,9 +230,14 @@ export default function AdminProductEditClient({ mode, id }: { mode: Mode; id?: 
       const urls: string[] = [];
       for (const file of Array.from(files)) urls.push(await uploadOne(file));
       setImageUrls((current) => {
-        const base = current.trim();
-        const next = urls.join("\n");
-        return base ? `${base}\n${next}\n` : `${next}\n`;
+        const existing = current
+          .split("\n")
+          .map((value) => value.trim())
+          .filter(Boolean);
+        const merged = [...urls, ...existing].filter(
+          (value, index, array) => array.indexOf(value) === index,
+        );
+        return merged.length ? `${merged.join("\n")}\n` : "";
       });
     } catch (err) {
       setError(`Erro ao enviar imagem. ${err instanceof Error && typeof err.message === "string" ? err.message : ""}`.trim());
@@ -376,7 +381,7 @@ export default function AdminProductEditClient({ mode, id }: { mode: Mode; id?: 
                         <option value={0}>Inativo</option>
                       </select>
                     </div>
-                    <div className="rounded-2xl border border-black/5 bg-white/70 p-4 text-xs text-felicio-ink/60"><b>Como funciona:</b> voce pode colar URLs no campo abaixo ou enviar arquivos. A primeira URL vira a capa.</div>
+                    <div className="rounded-2xl border border-black/5 bg-white/70 p-4 text-xs text-felicio-ink/60"><b>Como funciona:</b> voce pode colar URLs no campo abaixo ou enviar arquivos. A primeira URL vira a capa e os uploads novos entram primeiro.</div>
                   </div>
 
                   <div className="flex flex-wrap items-center gap-6">
