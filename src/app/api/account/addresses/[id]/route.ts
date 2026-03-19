@@ -1,15 +1,10 @@
-import jwt from "jsonwebtoken";
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { validateCsrfRequest } from "@/lib/csrf";
 import { getPostgresPool, hasPostgresConfig } from "@/lib/postgres";
-import { getJwtSecret } from "@/lib/runtimeSecrets";
+import { verifySessionToken } from "@/lib/sessionToken";
 
 export const runtime = "nodejs";
-
-type SessionPayload = {
-  sub: string | number;
-};
 
 type AddressPatchBody = {
   setDefault?: boolean;
@@ -26,17 +21,10 @@ type AddressPatchBody = {
 };
 
 async function getUserIdFromSession() {
-  const jwtSecret = getJwtSecret();
   const cookieStore = await cookies();
   const token = cookieStore.get("pf_session")?.value;
-  if (!token || !jwtSecret) return null;
-
-  try {
-    const payload = jwt.verify(token, jwtSecret) as SessionPayload;
-    return Number(payload.sub);
-  } catch {
-    return null;
-  }
+  const payload = verifySessionToken(token);
+  return payload ? Number(payload.sub) : null;
 }
 
 export async function PATCH(

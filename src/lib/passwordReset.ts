@@ -4,6 +4,7 @@ import {
   getPasswordResetSecret,
   requirePasswordResetSecret,
 } from "@/lib/runtimeSecrets";
+import { JWT_AUDIENCE, JWT_ISSUER } from "@/lib/tokenClaims";
 
 type ResetPayload = {
   email: string;
@@ -28,7 +29,11 @@ export function createPasswordResetToken(
     purpose: "password-reset",
   };
 
-  return jwt.sign(payload, requirePasswordResetSecret(), { expiresIn: "1h" });
+  return jwt.sign(payload, requirePasswordResetSecret(), {
+    issuer: JWT_ISSUER,
+    audience: JWT_AUDIENCE.passwordReset,
+    expiresIn: "1h",
+  });
 }
 
 export function verifyPasswordResetToken(token: string) {
@@ -36,7 +41,10 @@ export function verifyPasswordResetToken(token: string) {
   if (!secret || !token) return null;
 
   try {
-    const payload = jwt.verify(token, secret) as ResetPayload;
+    const payload = jwt.verify(token, secret, {
+      issuer: JWT_ISSUER,
+      audience: JWT_AUDIENCE.passwordReset,
+    }) as ResetPayload;
     if (payload.purpose !== "password-reset") return null;
     return payload;
   } catch {

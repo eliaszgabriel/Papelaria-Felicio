@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import jwt from "jsonwebtoken";
 import { getPostgresPool, hasPostgresConfig } from "@/lib/postgres";
-import { getJwtSecret } from "@/lib/runtimeSecrets";
+import { verifySessionToken } from "@/lib/sessionToken";
 
 
 function safeParse<T = unknown>(v: unknown): T | null {
@@ -15,14 +14,6 @@ function safeParse<T = unknown>(v: unknown): T | null {
 }
 
 export async function GET() {
-  const jwtSecret = getJwtSecret();
-  if (!jwtSecret) {
-    return NextResponse.json(
-      { ok: false, reason: "server_not_configured" },
-      { status: 500 },
-    );
-  }
-
   const cookieStore = await cookies();
   const token = cookieStore.get("pf_session")?.value;
 
@@ -33,10 +24,8 @@ export async function GET() {
     );
   }
 
-  let payload: { sub?: string | number } | null = null;
-  try {
-    payload = jwt.verify(token, jwtSecret) as { sub?: string | number };
-  } catch {
+  const payload = verifySessionToken(token);
+  if (!payload) {
     return NextResponse.json(
       { ok: false, reason: "Sessao invalida." },
       { status: 401 },

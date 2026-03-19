@@ -1,9 +1,9 @@
-import crypto from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { sendPaidEmailIfNeeded } from "@/lib/orderNotifications";
 import { markOrderPaid } from "@/lib/orderPayments";
 import { pushinpayGetTransaction } from "@/lib/pushinpay";
 import { getPostgresPool, hasPostgresConfig } from "@/lib/postgres";
+import { secureCompareText } from "@/lib/secureCompare";
 import { syncApprovedOrderToTiny } from "@/lib/tinyOrders";
 import { requireConfiguredSecret } from "@/lib/runtimeSecrets";
 
@@ -24,14 +24,11 @@ type ProcessPaymentResult =
 
 export async function POST(req: NextRequest) {
   const expectedToken = requireConfiguredSecret("PUSHINPAY_WEBHOOK_SECRET");
+  const headerSecret = req.headers.get("x-pushinpay-webhook-secret") || "";
   const receivedToken = req.nextUrl.searchParams.get("token") || "";
-
-  const expectedBuffer = Buffer.from(expectedToken);
-  const receivedBuffer = Buffer.from(receivedToken);
   const tokenMatches =
-    expectedBuffer.length === receivedBuffer.length &&
-    expectedBuffer.length > 0 &&
-    crypto.timingSafeEqual(expectedBuffer, receivedBuffer);
+    secureCompareText(headerSecret, expectedToken) ||
+    secureCompareText(receivedToken, expectedToken);
 
   if (!tokenMatches) {
     return NextResponse.json(

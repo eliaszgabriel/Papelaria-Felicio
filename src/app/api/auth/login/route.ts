@@ -1,10 +1,9 @@
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
 import { NextResponse } from "next/server";
 import { validateCsrfRequest } from "@/lib/csrf";
 import { getUserByEmail } from "@/lib/authStore";
 import { consumeRateLimit, getRequestIp } from "@/lib/rateLimit";
-import { requireJwtSecret } from "@/lib/runtimeSecrets";
+import { createSessionToken } from "@/lib/sessionToken";
 
 type LoginBody = {
   email?: string;
@@ -87,11 +86,7 @@ export async function POST(req: Request) {
     );
   }
 
-  const token = jwt.sign(
-    { sub: String(user.id), email: user.email },
-    requireJwtSecret(),
-    { expiresIn: "30d" },
-  );
+  const token = createSessionToken(user.id, user.email);
 
   const response = NextResponse.json({
     ok: true,

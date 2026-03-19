@@ -1,18 +1,13 @@
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { validateCsrfRequest } from "@/lib/csrf";
 import { getUserById, updateUserPassword } from "@/lib/authStore";
-import { getJwtSecret } from "@/lib/runtimeSecrets";
+import { verifySessionToken } from "@/lib/sessionToken";
 import { validatePassword } from "@/lib/validators";
 
 export const runtime = "nodejs";
 
-
-type SessionPayload = {
-  sub: string | number;
-};
 
 type ChangePasswordBody = {
   currentPassword?: string;
@@ -28,14 +23,6 @@ export async function POST(req: Request) {
   const csrfError = validateCsrfRequest(req);
   if (csrfError) {
     return csrfError;
-  }
-
-  const jwtSecret = getJwtSecret();
-  if (!jwtSecret) {
-    return NextResponse.json(
-      { ok: false, reason: "server_not_configured" },
-      { status: 500 },
-    );
   }
 
   const cookieStore = await cookies();
@@ -60,10 +47,8 @@ export async function POST(req: Request) {
     );
   }
 
-  let payload: SessionPayload;
-  try {
-    payload = jwt.verify(token, jwtSecret) as SessionPayload;
-  } catch {
+  const payload = verifySessionToken(token);
+  if (!payload) {
     return NextResponse.json(
       { ok: false, reason: "unauthorized" },
       { status: 401 },

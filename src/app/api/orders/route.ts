@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import { pushinpayCreatePixCashIn } from "@/lib/pushinpay";
 import { calculateMockShipping } from "@/lib/shipping";
@@ -27,6 +26,7 @@ import {
   requireConfiguredSecret,
   requireJwtSecret,
 } from "@/lib/runtimeSecrets";
+import { verifySessionToken } from "@/lib/sessionToken";
 
 export const runtime = "nodejs";
 
@@ -102,14 +102,8 @@ async function getSessionEmailFromCookies() {
   const sessionToken = cookieStore.get("pf_session")?.value;
   if (!sessionToken) return "";
 
-  try {
-    const payload = jwt.verify(sessionToken, requireJwtSecret()) as {
-      email?: string;
-    };
-    return normEmail(payload.email);
-  } catch {
-    return "";
-  }
+  const payload = verifySessionToken(sessionToken);
+  return payload?.email || "";
 }
 
 async function getOrCreateUserIdFromCustomerJson(
@@ -267,13 +261,9 @@ async function getAuthorizedEmail(req: Request) {
   const sessionToken = cookieStore.get("pf_session")?.value;
 
   if (sessionToken) {
-    try {
-      const payload = jwt.verify(sessionToken, requireJwtSecret()) as {
-        email?: string;
-      };
-      const sessionEmail = normEmail(payload.email);
-      if (sessionEmail) return sessionEmail;
-    } catch {}
+    const payload = verifySessionToken(sessionToken);
+    const sessionEmail = normEmail(payload?.email);
+    if (sessionEmail) return sessionEmail;
   }
 
   const lookup = verifyOrderLookupToken(lookupToken);

@@ -3,6 +3,7 @@ import {
   getOrderAccessSecret,
   requireOrderAccessSecret,
 } from "@/lib/runtimeSecrets";
+import { JWT_AUDIENCE, JWT_ISSUER } from "@/lib/tokenClaims";
 
 
 type OrderLookupPayload = {
@@ -29,7 +30,11 @@ export function createOrderLookupToken(email: string, orderId: string) {
       orderId: normalizedOrderId satisfies OrderLookupPayload["orderId"],
     },
     requireOrderAccessSecret(),
-    { expiresIn: "14d" },
+    {
+      issuer: JWT_ISSUER,
+      audience: JWT_AUDIENCE.orderAccess,
+      expiresIn: "14d",
+    },
   );
 }
 
@@ -37,7 +42,10 @@ export function verifyOrderLookupToken(token: string | null | undefined) {
   if (!token) return null;
 
   try {
-    const payload = jwt.verify(token, getOrderAccessSecret()) as Partial<OrderLookupPayload>;
+    const payload = jwt.verify(token, getOrderAccessSecret(), {
+      issuer: JWT_ISSUER,
+      audience: JWT_AUDIENCE.orderAccess,
+    }) as Partial<OrderLookupPayload>;
     if (payload.type !== "order_lookup" || !payload.email || !payload.orderId) {
       return null;
     }

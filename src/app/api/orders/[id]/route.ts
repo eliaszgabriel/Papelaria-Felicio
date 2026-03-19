@@ -1,10 +1,9 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import jwt from "jsonwebtoken";
 import { verifyOrderLookupToken } from "@/lib/orderAccess";
 import { isAdminSession } from "@/lib/adminAuth";
 import { getPostgresPool, hasPostgresConfig } from "@/lib/postgres";
-import { getJwtSecret } from "@/lib/runtimeSecrets";
+import { verifySessionToken } from "@/lib/sessionToken";
 
 export const runtime = "nodejs";
 
@@ -71,17 +70,10 @@ function rowToOrder(row: OrderRow) {
 }
 
 async function getSessionUserId() {
-  try {
-    const jwtSecret = getJwtSecret();
-    if (!jwtSecret) return null;
-    const cookieStore = await cookies();
-    const token = cookieStore.get("pf_session")?.value;
-    if (!token) return null;
-    const payload = jwt.verify(token, jwtSecret) as { sub?: string | number };
-    return Number(payload.sub);
-  } catch {
-    return null;
-  }
+  const cookieStore = await cookies();
+  const token = cookieStore.get("pf_session")?.value;
+  const payload = verifySessionToken(token);
+  return payload ? Number(payload.sub) : null;
 }
 
 export async function GET(
