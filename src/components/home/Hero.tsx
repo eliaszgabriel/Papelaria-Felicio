@@ -8,7 +8,7 @@ export default function Hero() {
     {
       label: "Canetas",
       href: "/produtos?category=canetas",
-      image: "/b.png",
+      image: "/canetas.png",
     },
     {
       label: "Cadernos",
