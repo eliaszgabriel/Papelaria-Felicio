@@ -44,7 +44,9 @@ export default function ProductCard({
   const href = `/produtos/${encodeURIComponent(product.slug)}`;
   const stockCount = Number(product.stock ?? 0);
   const stockLabel = outOfStock
-    ? "Sem estoque no momento"
+    ? compact
+      ? "Sem estoque"
+      : "Sem estoque no momento"
     : stockCount <= 5
       ? `Últimas ${stockCount} unidades`
       : `Em estoque: ${stockCount}`;
@@ -181,7 +183,7 @@ export default function ProductCard({
               </div>
             )}
 
-            <div className="mt-1 inline-flex max-w-full rounded-full border border-black/5 bg-white/75 px-2 py-1 text-[9px] font-semibold leading-tight text-felicio-ink/60 sm:mt-2 sm:px-3 sm:text-[11px]">
+            <div className="mt-1 inline-flex max-w-full rounded-full border border-black/5 bg-white/75 px-2 py-1 text-[8px] font-semibold leading-tight text-felicio-ink/60 sm:mt-2 sm:px-3 sm:text-[11px]">
               {stockLabel}
             </div>
           </div>
