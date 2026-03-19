@@ -1,4 +1,3 @@
-import Link from "next/link";
 import ProductCard from "@/components/product/ProductCard";
 
 type RailProduct = {
@@ -19,26 +18,6 @@ export default function AnimatedProductRail({
   if (!items.length) return null;
 
   const duplicated = [...items, ...items];
-  const mobileShortcuts = [
-    {
-      href: "/produtos?sort=new&deal=1&page=1",
-      eyebrow: "Ofertas",
-      title: "Achadinhos da semana",
-      description: "Filtre o que esta com preco especial.",
-    },
-    {
-      href: "/produtos?sort=new&page=1",
-      eyebrow: "Novidades",
-      title: "Chegou agora",
-      description: "Veja o que entrou por ultimo na vitrine.",
-    },
-    {
-      href: "/meus-pedidos",
-      eyebrow: "Pedidos",
-      title: "Acompanhe por aqui",
-      description: "Consulte pagamento, entrega e historico.",
-    },
-  ];
 
   return (
     <section className="py-6">
@@ -58,34 +37,32 @@ export default function AnimatedProductRail({
       </div>
 
       <div className="md:hidden">
-        <div className="rounded-[2rem] border border-white/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.88),rgba(255,247,250,0.8))] p-4 shadow-soft">
+        <div className="rounded-[2rem] border border-white/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.88),rgba(255,247,250,0.8))] px-4 py-5 shadow-soft">
           <div className="inline-flex items-center gap-2 rounded-full border border-white/75 bg-white/80 px-4 py-2 text-[10px] font-extrabold uppercase tracking-[0.18em] text-felicio-ink/65">
-            Comece por aqui
+            Vitrine da papelaria
           </div>
-          <h2 className="mt-4 text-[2.05rem] font-extrabold tracking-tight text-felicio-ink/85">
-            Atalhos para comprar sem enrolacao
+          <h2 className="mt-4 max-w-[14rem] text-[2rem] font-extrabold tracking-tight text-felicio-ink/85">
+            Produtos desfilando no celular
           </h2>
           <p className="mt-2 max-w-[20rem] text-sm leading-relaxed text-felicio-ink/63">
-            No celular, fica mais gostoso ir direto para oferta, novidade ou acompanhar o pedido.
+            Uma fileira leve de produtos para arrastar com o dedo e descobrir a vitrine com calma.
           </p>
 
-          <div className="mt-5 grid grid-cols-1 gap-3">
-            {mobileShortcuts.map((shortcut) => (
-              <Link
-                key={shortcut.href}
-                href={shortcut.href}
-                className="rounded-[1.6rem] border border-white/75 bg-white/88 px-4 py-4 shadow-[0_16px_40px_rgba(0,0,0,0.06)] transition hover:-translate-y-0.5 hover:bg-white"
+          <div className="mt-4 flex items-center justify-between gap-3">
+            <div className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-felicio-ink/45">
+              Arraste para o lado
+            </div>
+            <div className="h-px flex-1 bg-gradient-to-r from-felicio-pink/30 to-transparent" />
+          </div>
+
+          <div className="mt-4 flex gap-3 overflow-x-auto pb-2 pr-1 snap-x snap-mandatory [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {items.map((product) => (
+              <div
+                key={product.id}
+                className="w-[16rem] min-w-[16rem] snap-start first:w-[17rem] first:min-w-[17rem]"
               >
-                <div className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-felicio-pink">
-                  {shortcut.eyebrow}
-                </div>
-                <div className="mt-2 text-base font-extrabold text-felicio-ink">
-                  {shortcut.title}
-                </div>
-                <div className="mt-1 text-sm leading-relaxed text-felicio-ink/62">
-                  {shortcut.description}
-                </div>
-              </Link>
+                <ProductCard product={product} compact />
+              </div>
             ))}
           </div>
         </div>
