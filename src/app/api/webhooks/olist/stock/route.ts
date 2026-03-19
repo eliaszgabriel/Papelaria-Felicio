@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { isOlistConfigured } from "@/lib/olist";
 import { syncOlistSku } from "@/lib/olistSyncSku";
+import { secureCompareText } from "@/lib/secureCompare";
 
 export const runtime = "nodejs";
 
@@ -27,7 +28,7 @@ function isAuthorized(request: Request) {
   const url = new URL(request.url);
   const querySecret = url.searchParams.get("secret") || url.searchParams.get("token") || "";
 
-  return headerSecret === secret || querySecret === secret;
+  return secureCompareText(headerSecret, secret) || secureCompareText(querySecret, secret);
 }
 
 function extractSku(payload: OlistWebhookPayload | null) {

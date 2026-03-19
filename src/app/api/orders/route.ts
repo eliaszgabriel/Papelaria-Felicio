@@ -290,6 +290,8 @@ export async function GET(req: Request) {
     );
   }
 
+  const lookupToken = new URL(req.url).searchParams.get("lookupToken");
+  const lookup = verifyOrderLookupToken(lookupToken);
   const email = await getAuthorizedEmail(req);
   if (!email) {
     return NextResponse.json(
@@ -320,9 +322,10 @@ export async function GET(req: Request) {
           user_id
         FROM orders
         WHERE lower(customeremail) = $1
+          AND ($2::text IS NULL OR id = $2)
         ORDER BY createdat DESC
         `,
-        [email],
+        [email, lookup?.orderId || null],
       );
       rows = result.rows;
     } else {
@@ -333,10 +336,11 @@ export async function GET(req: Request) {
           SELECT *
           FROM orders
           WHERE lower(json_extract(customerJson, '$.email')) = ?
+            AND (? IS NULL OR id = ?)
           ORDER BY createdAt DESC
           `,
         )
-        .all(email) as Array<Record<string, unknown>>;
+        .all(email, lookup?.orderId || null, lookup?.orderId || null) as Array<Record<string, unknown>>;
     }
   } catch {
     if (hasPostgresConfig()) {
@@ -359,9 +363,10 @@ export async function GET(req: Request) {
           user_id
         FROM orders
         WHERE lower(customerjson) LIKE lower($1)
+          AND ($2::text IS NULL OR id = $2)
         ORDER BY createdat DESC
         `,
-        [`%"email":"${email}"%`],
+        [`%"email":"${email}"%`, lookup?.orderId || null],
       );
       rows = result.rows;
     } else {
@@ -373,10 +378,11 @@ export async function GET(req: Request) {
           SELECT *
           FROM orders
           WHERE lower(customerJson) LIKE lower(?)
+            AND (? IS NULL OR id = ?)
           ORDER BY createdAt DESC
           `,
         )
-        .all(needle) as Array<Record<string, unknown>>;
+        .all(needle, lookup?.orderId || null, lookup?.orderId || null) as Array<Record<string, unknown>>;
     }
   }
 
@@ -646,7 +652,7 @@ export async function POST(req: Request) {
     );
   }
   let payment = body.payment ?? null;
-  const orderAccessToken = createOrderLookupToken(customerEmail);
+  const orderAccessToken = createOrderLookupToken(customerEmail, orderId);
 
   if (paymentMethod === "pix_auto") {
     const baseUrl = getPublicBaseUrl(req);
@@ -740,10 +746,7 @@ export async function POST(req: Request) {
 
   if (paymentMethod === "card_mercadopago") {
     const baseUrl = getPublicBaseUrl(req);
-    const webhookSecret = requireConfiguredSecret("MERCADOPAGO_WEBHOOK_SECRET");
-    const webhookUrl = webhookSecret
-      ? `${baseUrl}/api/webhooks/mercadopago?token=${encodeURIComponent(webhookSecret)}`
-      : `${baseUrl}/api/webhooks/mercadopago`;
+    const webhookUrl = `${baseUrl}/api/webhooks/mercadopago`;
 
     const successBase =
       `${baseUrl}/pedidos/sucesso?id=${encodeURIComponent(orderId)}` +
@@ -1009,7 +1012,7 @@ export async function POST(req: Request) {
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
     path: "/",
-    maxAge: 60 * 60 * 24 * 30,
+    maxAge: 60 * 60 * 24 * 14,
   });
 
   return res;

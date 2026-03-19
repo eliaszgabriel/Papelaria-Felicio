@@ -44,7 +44,7 @@ export function validateCsrfRequest(req: Request) {
   }
 
   const referer = toOrigin(req.headers.get("referer"));
-  if (referer && allowedOrigins.has(referer)) {
+  if (!origin && referer && allowedOrigins.has(referer)) {
     return null;
   }
 

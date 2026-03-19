@@ -150,7 +150,7 @@ export async function GET(
 
   if (!authorized) {
     const lookup = verifyOrderLookupToken(accessToken);
-    if (lookup?.email) {
+    if (lookup?.email && lookup.orderId === orderId) {
       try {
         const customer = JSON.parse(row.customerJson ?? "{}");
         if (

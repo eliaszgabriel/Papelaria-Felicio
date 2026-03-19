@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { fetchOlistProducts, isOlistConfigured } from "@/lib/olist";
 import { importOlistProducts } from "@/lib/olistImport";
 import { getOlistSyncCursor, saveOlistSyncCursor } from "@/lib/olistSyncState";
+import { secureCompareText } from "@/lib/secureCompare";
 
 export const runtime = "nodejs";
 
@@ -10,10 +11,7 @@ function isAuthorized(request: Request) {
   if (!secret) return false;
 
   const headerSecret = request.headers.get("x-olist-sync-secret") || "";
-  const url = new URL(request.url);
-  const querySecret = url.searchParams.get("secret") || "";
-
-  return headerSecret === secret || querySecret === secret;
+  return secureCompareText(headerSecret, secret);
 }
 
 function sleep(ms: number) {

@@ -7,10 +7,20 @@ echo
 
 echo "1. Procurando possiveis secrets hardcoded..."
 if grep -RInE --include="*.ts" --include="*.tsx" --include="*.js" --include="*.mjs" \
-  "(password.*=|secret.*=|apikey.*=|token.*=)" src scripts 2>/dev/null | grep -vi "process.env" | grep -vi "secret_not_configured" | grep -vi "token_not_configured"; then
+  '\b(const|let|var)\s+[A-Za-z0-9_]*(secret|token|password|apikey|apiKey)[A-Za-z0-9_]*\s*=\s*["'\''][^"'\'']{8,}["'\'']' \
+  src scripts 2>/dev/null | grep -vi "process.env"; then
   echo "ATENCAO: revise as linhas acima."
 else
-  echo "OK: nenhum secret hardcoded encontrado pelo filtro basico"
+  echo "OK: nenhum secret hardcoded encontrado pelo filtro de alta confianca"
+fi
+echo
+
+echo "1.1 Procurando secrets em query string..."
+if grep -RInE --include="*.ts" --include="*.tsx" --include="*.js" --include="*.mjs" \
+  'token=|secret=' src 2>/dev/null; then
+  echo "ATENCAO: revise os usos acima. Alguns provedores externos podem exigir token em query."
+else
+  echo "OK: nenhum secret em query string encontrado"
 fi
 echo
 

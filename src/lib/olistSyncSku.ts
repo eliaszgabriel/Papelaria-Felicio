@@ -1,15 +1,13 @@
 import { fetchOlistProducts, isOlistConfigured } from "@/lib/olist";
 import { importOlistProducts } from "@/lib/olistImport";
+import { secureCompareText } from "@/lib/secureCompare";
 
 export function isOlistSyncAuthorized(request: Request) {
   const secret = process.env.OLIST_SYNC_SECRET || "";
   if (!secret) return false;
 
   const headerSecret = request.headers.get("x-olist-sync-secret") || "";
-  const url = new URL(request.url);
-  const querySecret = url.searchParams.get("secret") || "";
-
-  return headerSecret === secret || querySecret === secret;
+  return secureCompareText(headerSecret, secret);
 }
 
 export async function syncOlistSku(sku: string) {

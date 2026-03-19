@@ -7,6 +7,7 @@ import { getMercadoPagoPayment } from "@/lib/mercadoPago";
 import { sendNewOrderAdminEmailByOrderId } from "@/lib/adminOrderNotifications";
 import { syncApprovedOrderToTiny } from "@/lib/tinyOrders";
 import { requireConfiguredSecret } from "@/lib/runtimeSecrets";
+import { secureCompareText } from "@/lib/secureCompare";
 
 export const runtime = "nodejs";
 
@@ -25,15 +26,6 @@ function getPaymentId(req: Request, body: unknown) {
   }
 
   return "";
-}
-
-function safeEqualText(left: string, right: string) {
-  const leftBuffer = Buffer.from(left);
-  const rightBuffer = Buffer.from(right);
-  if (leftBuffer.length !== rightBuffer.length) {
-    return false;
-  }
-  return crypto.timingSafeEqual(leftBuffer, rightBuffer);
 }
 
 function verifyMercadoPagoSignature(
@@ -68,13 +60,12 @@ function verifyMercadoPagoSignature(
     .update(manifest)
     .digest("hex");
 
-  return safeEqualText(expectedHash, hash);
+  return secureCompareText(expectedHash, hash);
 }
 
 export async function POST(req: Request) {
-  const url = new URL(req.url);
   const webhookSecret = requireConfiguredSecret("MERCADOPAGO_WEBHOOK_SECRET");
-  const requestToken = url.searchParams.get("token") || "";
+  const headerSecret = req.headers.get("x-mercadopago-webhook-secret") || "";
 
   const body = await req.json().catch(() => null);
   const paymentId = String(getPaymentId(req, body) || "");
@@ -85,9 +76,9 @@ export async function POST(req: Request) {
   const validSignature = hasMercadoPagoSignature
     ? verifyMercadoPagoSignature(webhookSecret, xSignature, xRequestId, paymentId)
     : false;
-  const validToken = requestToken ? safeEqualText(requestToken, webhookSecret) : false;
+  const validHeaderSecret = secureCompareText(headerSecret, webhookSecret);
 
-  if (!validSignature && !validToken) {
+  if (!validSignature && !validHeaderSecret) {
     return NextResponse.json({ ok: false, error: "invalid_signature" }, { status: 401 });
   }
 

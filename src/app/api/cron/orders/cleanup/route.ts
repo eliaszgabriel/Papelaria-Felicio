@@ -3,6 +3,7 @@ import {
   cleanupExpiredPendingOrders,
   getOrderCleanupConfig,
 } from "@/lib/orderCleanup";
+import { secureCompareText } from "@/lib/secureCompare";
 
 export const runtime = "nodejs";
 
@@ -11,10 +12,7 @@ function isAuthorized(request: Request) {
   if (!secret) return false;
 
   const headerSecret = request.headers.get("x-order-cleanup-secret") || "";
-  const url = new URL(request.url);
-  const querySecret = url.searchParams.get("secret") || "";
-
-  return headerSecret === secret || querySecret === secret;
+  return secureCompareText(headerSecret, secret);
 }
 
 export async function POST(request: Request) {
