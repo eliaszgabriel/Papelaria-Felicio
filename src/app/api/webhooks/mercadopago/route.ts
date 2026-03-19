@@ -64,8 +64,10 @@ function verifyMercadoPagoSignature(
 }
 
 export async function POST(req: Request) {
+  const url = new URL(req.url);
   const webhookSecret = requireConfiguredSecret("MERCADOPAGO_WEBHOOK_SECRET");
   const headerSecret = req.headers.get("x-mercadopago-webhook-secret") || "";
+  const queryToken = url.searchParams.get("token") || "";
 
   const body = await req.json().catch(() => null);
   const paymentId = String(getPaymentId(req, body) || "");
@@ -77,12 +79,20 @@ export async function POST(req: Request) {
     ? verifyMercadoPagoSignature(webhookSecret, xSignature, xRequestId, paymentId)
     : false;
   const validHeaderSecret = secureCompareText(headerSecret, webhookSecret);
+  const validQueryToken = secureCompareText(queryToken, webhookSecret);
 
-  if (!validSignature && !validHeaderSecret) {
+  if (!validSignature && !validHeaderSecret && !validQueryToken) {
+    console.warn("Mercado Pago webhook rejeitado:", {
+      hasMercadoPagoSignature,
+      hasHeaderSecret: Boolean(headerSecret),
+      hasQueryToken: Boolean(queryToken),
+      paymentId: paymentId || null,
+    });
     return NextResponse.json({ ok: false, error: "invalid_signature" }, { status: 401 });
   }
 
   if (!paymentId) {
+    console.warn("Mercado Pago webhook ignorado por falta de paymentId");
     return NextResponse.json({ ok: true, ignored: true, reason: "missing_payment_id" });
   }
 
@@ -95,10 +105,18 @@ export async function POST(req: Request) {
     ).trim();
 
     if (!orderId) {
+      console.warn("Mercado Pago webhook sem referencia de pedido:", {
+        paymentId,
+      });
       return NextResponse.json({ ok: true, ignored: true, reason: "missing_order_reference" });
     }
 
     if (payment.status !== "approved") {
+      console.log("Mercado Pago webhook recebido com status nao aprovado:", {
+        orderId,
+        paymentId,
+        status: payment.status,
+      });
       return NextResponse.json({
         ok: true,
         ignored: true,
@@ -153,9 +171,21 @@ export async function POST(req: Request) {
       }
     }
 
+    console.log("Mercado Pago webhook processado com sucesso:", {
+      orderId,
+      paymentId,
+      usedSignature: validSignature,
+      usedHeaderSecret: validHeaderSecret,
+      usedQueryToken: validQueryToken,
+    });
+
     return NextResponse.json({ ok: true, order_id: orderId });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "unknown_error";
+    console.error("Erro no webhook Mercado Pago:", {
+      paymentId: paymentId || null,
+      message,
+    });
     return NextResponse.json(
       { ok: false, error: "mercadopago_webhook_error", message },
       { status: 500 },

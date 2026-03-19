@@ -737,7 +737,10 @@ export async function POST(req: Request) {
 
   if (paymentMethod === "card_mercadopago") {
     const baseUrl = getPublicBaseUrl(req);
-    const webhookUrl = `${baseUrl}/api/webhooks/mercadopago`;
+    const webhookSecret = requireConfiguredSecret("MERCADOPAGO_WEBHOOK_SECRET");
+    const webhookUrl = webhookSecret
+      ? `${baseUrl}/api/webhooks/mercadopago?token=${encodeURIComponent(webhookSecret)}`
+      : `${baseUrl}/api/webhooks/mercadopago`;
 
     const successBase =
       `${baseUrl}/pedidos/sucesso?id=${encodeURIComponent(orderId)}` +
