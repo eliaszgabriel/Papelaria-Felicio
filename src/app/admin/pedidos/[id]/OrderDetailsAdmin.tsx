@@ -33,12 +33,18 @@ const STATUS_STYLE: Record<
     className:
       "bg-felicio-lilac/15 text-felicio-ink/80 border border-felicio-lilac/25",
   },
+  cancelado: {
+    label: "Cancelado",
+    className:
+      "bg-rose-100 text-felicio-ink/80 border border-rose-200",
+  },
 };
 
 const STATUS_LABEL: Record<OrderStatus, string> = {
   aguardando_pagamento: "Aguardando pagamento",
   pago: "Pago",
   enviado: "Enviado",
+  cancelado: "Cancelado",
 };
 
 type OrderResponse = {

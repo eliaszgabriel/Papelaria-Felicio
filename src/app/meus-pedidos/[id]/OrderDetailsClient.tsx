@@ -25,6 +25,11 @@ const STATUS_STYLE: Record<
     className:
       "bg-felicio-lilac/15 text-felicio-ink/80 border border-felicio-lilac/25",
   },
+  cancelado: {
+    label: "Cancelado",
+    className:
+      "bg-rose-100 text-felicio-ink/80 border border-rose-200",
+  },
 };
 
 function formatBRL(value: number) {
@@ -204,6 +209,7 @@ export default function OrderDetailsClient() {
   const isPaidOrShipped = order.status === "pago" || order.status === "enviado";
   const isPaid = order.status === "pago" || order.status === "enviado";
   const isShipped = order.status === "enviado";
+  const isCanceled = order.status === "cancelado";
 
   return (
     <main>
@@ -574,7 +580,32 @@ export default function OrderDetailsClient() {
                   </div>
                 </div>
 
-                {!isPaidOrShipped ? (
+                {isCanceled ? (
+                  <div className="mt-4 rounded-2xl border border-rose-200 bg-rose-50 p-4">
+                    <div className="text-sm font-extrabold text-felicio-ink/80">
+                      Pedido cancelado
+                    </div>
+                    <p className="mt-1 text-xs text-felicio-ink/65">
+                      O prazo de pagamento expirou. Se quiser, voce pode voltar para a loja e montar um novo pedido.
+                    </p>
+
+                    <div className="mt-4 grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+                      <button
+                        onClick={() => window.location.assign("/meus-pedidos")}
+                        className="inline-flex w-full items-center justify-center rounded-full border border-felicio-pink/25 bg-white px-5 py-3 text-sm font-semibold text-felicio-ink/90 shadow-soft transition hover:border-felicio-pink/40 hover:bg-felicio-pink/10"
+                      >
+                        Ver pedidos
+                      </button>
+
+                      <button
+                        onClick={() => window.location.assign("/")}
+                        className="inline-flex w-full items-center justify-center rounded-full bg-gradient-to-r from-felicio-pink/70 to-felicio-lilac/90 px-5 py-3 text-sm font-semibold text-white transition hover:brightness-105 hover:shadow-[0_16px_40px_rgba(244,114,182,0.35)]"
+                      >
+                        Voltar para a loja
+                      </button>
+                    </div>
+                  </div>
+                ) : !isPaidOrShipped ? (
                   <>
                     {order.paymentMethod === "pix_auto" && (
                       <button

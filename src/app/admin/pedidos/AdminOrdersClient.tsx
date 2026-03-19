@@ -8,7 +8,7 @@ import AppToast, { type AppToastState } from "@/components/ui/AppToast";
 type OrderRow = {
   id: string;
   createdAt: number;
-  status: "aguardando_pagamento" | "pago" | "enviado";
+  status: "aguardando_pagamento" | "pago" | "enviado" | "cancelado";
   total: number;
   paymentMethod: string;
   customer: { name: string; whats: string; email?: string };
@@ -16,7 +16,13 @@ type OrderRow = {
 
 type OrderStatusFilter = "" | OrderRow["status"];
 type OrderSort = "new" | "old" | "high" | "low";
-type OrderQuickView = "all" | "recent" | "awaiting" | "paid" | "shipped";
+type OrderQuickView =
+  | "all"
+  | "recent"
+  | "awaiting"
+  | "paid"
+  | "shipped"
+  | "canceled";
 
 function formatBRL(value: number) {
   return new Intl.NumberFormat("pt-BR", {
@@ -53,6 +59,10 @@ const STATUS_META: Record<OrderRow["status"], { label: string; cls: string }> = 
   enviado: {
     label: "Enviado",
     cls: "bg-felicio-lilac/10 border-felicio-lilac/20",
+  },
+  cancelado: {
+    label: "Cancelado",
+    cls: "bg-rose-100 border-rose-200",
   },
 };
 
@@ -112,6 +122,7 @@ export default function AdminOrdersClient() {
       aguardando_pagamento: 0,
       pago: 0,
       enviado: 0,
+      cancelado: 0,
       total: 0,
       recent: 0,
     };
@@ -121,6 +132,7 @@ export default function AdminOrdersClient() {
       if (o.status === "aguardando_pagamento") c.aguardando_pagamento += 1;
       if (o.status === "pago") c.pago += 1;
       if (o.status === "enviado") c.enviado += 1;
+      if (o.status === "cancelado") c.cancelado += 1;
       if (o.createdAt >= recentThreshold) c.recent += 1;
     }
 
@@ -204,6 +216,7 @@ export default function AdminOrdersClient() {
       if (quickView === "awaiting") return order.status === "aguardando_pagamento";
       if (quickView === "paid") return order.status === "pago";
       if (quickView === "shipped") return order.status === "enviado";
+      if (quickView === "canceled") return order.status === "cancelado";
       return true;
     });
 
@@ -288,6 +301,9 @@ export default function AdminOrdersClient() {
                   <span className="rounded-full border border-felicio-lilac/20 bg-felicio-lilac/10 px-3 py-1 text-xs text-felicio-ink/70">
                     Enviado <b>{counts.enviado}</b>
                   </span>
+                  <span className="rounded-full border border-rose-200 bg-rose-100 px-3 py-1 text-xs text-felicio-ink/70">
+                    Cancelado <b>{counts.cancelado}</b>
+                  </span>
                   <span className="rounded-full border border-felicio-sun/25 bg-felicio-sun/14 px-3 py-1 text-xs text-felicio-ink/70">
                     Ultimas 24h <b>{counts.recent}</b>
                   </span>
@@ -336,6 +352,7 @@ export default function AdminOrdersClient() {
                   <option value="aguardando_pagamento">Aguardando</option>
                   <option value="pago">Pago</option>
                   <option value="enviado">Enviado</option>
+                  <option value="cancelado">Cancelado</option>
                 </select>
 
                 <select
@@ -369,6 +386,7 @@ export default function AdminOrdersClient() {
                 { id: "awaiting", label: "Aguardando", count: counts.aguardando_pagamento },
                 { id: "paid", label: "Pagos", count: counts.pago },
                 { id: "shipped", label: "Enviados", count: counts.enviado },
+                { id: "canceled", label: "Cancelados", count: counts.cancelado },
               ].map((option) => {
                 const isActive = quickView === option.id;
                 return (

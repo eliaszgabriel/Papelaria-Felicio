@@ -69,7 +69,10 @@ export async function GET(req: Request) {
     customer: JSON.parse(row.customerJson) as CustomerSummary,
   }));
 
-  if (status && ["aguardando_pagamento", "pago", "enviado"].includes(status)) {
+  if (
+    status &&
+    ["aguardando_pagamento", "pago", "enviado", "cancelado"].includes(status)
+  ) {
     orders = orders.filter((order) => order.status === status);
   }
 

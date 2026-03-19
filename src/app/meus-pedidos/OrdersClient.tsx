@@ -7,7 +7,7 @@ import Container from "@/components/layout/Container";
 type OrderListItem = {
   id: string;
   createdAt: number;
-  status: "aguardando_pagamento" | "pago" | "enviado";
+  status: "aguardando_pagamento" | "pago" | "enviado" | "cancelado";
   total: number;
 };
 
@@ -42,6 +42,13 @@ function getStatusUI(status: OrderListItem["status"]) {
     return {
       label: "Enviado",
       cls: "bg-felicio-lilac/15 text-felicio-ink/80 border-felicio-lilac/25",
+    };
+  }
+
+  if (status === "cancelado") {
+    return {
+      label: "Cancelado",
+      cls: "bg-rose-100 text-felicio-ink/80 border-rose-200",
     };
   }
 

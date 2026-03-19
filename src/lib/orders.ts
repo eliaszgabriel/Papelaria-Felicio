@@ -1,4 +1,8 @@
-export type OrderStatus = "aguardando_pagamento" | "pago" | "enviado";
+export type OrderStatus =
+  | "aguardando_pagamento"
+  | "pago"
+  | "enviado"
+  | "cancelado";
 
 export type OrderItem = {
   id: string;
