@@ -18,6 +18,7 @@ type ProductColorOption = {
   id: string;
   name: string;
   imageUrl: string;
+  includeInGallery?: boolean;
 };
 
 type ProductResponse = {
@@ -127,7 +128,10 @@ export default async function ProdutoSlugPage({
       .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
       .map((image) => image.url)
       .filter(Boolean),
-    ...((product.colorOptions ?? []).map((option) => option.imageUrl).filter(Boolean)),
+    ...((product.colorOptions ?? [])
+      .filter((option) => option.includeInGallery)
+      .map((option) => option.imageUrl)
+      .filter(Boolean)),
   ].filter((value, index, array) => array.indexOf(value) === index);
 
   const mainImage = images[0] || product.coverImage || "";
