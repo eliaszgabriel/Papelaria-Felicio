@@ -247,7 +247,9 @@ export default function ProductInfo({
         {product.title}
       </h1>
 
-      <p className="mt-2.5 text-sm leading-6 text-felicio-ink/64">{product.short}</p>
+      <p className="mt-2.5 whitespace-pre-line text-sm leading-6 text-felicio-ink/64">
+        {product.short}
+      </p>
 
       <div className="mt-4 flex items-end gap-3">
         <div className="text-[1.9rem] font-extrabold text-felicio-ink lg:text-[2.2rem]">
