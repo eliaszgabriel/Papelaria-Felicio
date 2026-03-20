@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Container from "@/components/layout/Container";
 import { Order, OrderItem, OrderStatus, OrderStatusEvent } from "@/lib/orders";
+import { formatProductVariantTitle } from "@/lib/productVariantTitle";
 import { STORE } from "@/lib/storeConfig";
 import AppToast, { type AppToastState } from "@/components/ui/AppToast";
 
@@ -224,7 +225,7 @@ export default function OrderDetailsAdmin({ orderId }: { orderId: string }) {
 
     const itemsText = order.items
       .map((item) => {
-        return `- ${item.title} (Qtd: ${item.qty}) - ${formatBRL(getItemTotal(item))}`;
+        return `- ${formatProductVariantTitle(item.title, item.colorName)} (Qtd: ${item.qty}) - ${formatBRL(getItemTotal(item))}`;
       })
       .join("\n");
 
@@ -566,24 +567,27 @@ export default function OrderDetailsAdmin({ orderId }: { orderId: string }) {
                   Itens
                 </h2>
                 <div className="mt-4 space-y-3">
-                  {order.items.map((item) => (
-                    <div
-                      key={`${order.id}-${item.id}-${item.slug ?? item.title}`}
-                      className="flex items-center justify-between gap-3 rounded-2xl border border-black/5 bg-white p-4"
-                    >
-                      <div className="min-w-0">
-                        <div className="truncate font-extrabold text-felicio-ink/80">
-                          {item.title}
+                  {order.items.map((item) => {
+                    const displayTitle = formatProductVariantTitle(item.title, item.colorName);
+                    return (
+                      <div
+                        key={`${order.id}-${item.id}-${item.slug ?? item.title}`}
+                        className="flex items-center justify-between gap-3 rounded-2xl border border-black/5 bg-white p-4"
+                      >
+                        <div className="min-w-0">
+                          <div className="truncate font-extrabold text-felicio-ink/80">
+                            {displayTitle}
+                          </div>
+                          <div className="text-sm text-felicio-ink/60">
+                            Qtd: {item.qty}
+                          </div>
                         </div>
-                        <div className="text-sm text-felicio-ink/60">
-                          Qtd: {item.qty}
+                        <div className="font-extrabold text-felicio-ink/80">
+                          {formatBRL(getItemTotal(item))}
                         </div>
                       </div>
-                      <div className="font-extrabold text-felicio-ink/80">
-                        {formatBRL(getItemTotal(item))}
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </section>
             </div>

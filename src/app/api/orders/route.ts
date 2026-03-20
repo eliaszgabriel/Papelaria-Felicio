@@ -23,6 +23,7 @@ import { getPostgresPool, hasPostgresConfig } from "@/lib/postgres";
 import { getOrderLookupCookieOptions } from "@/lib/secureCookies";
 import { getSiteUrl } from "@/lib/siteUrl";
 import { escapeHtml, sanitizeEmailUrl } from "@/lib/htmlEscape";
+import { formatProductVariantTitle } from "@/lib/productVariantTitle";
 import {
   requireConfiguredSecret,
   requireJwtSecret,
@@ -558,7 +559,7 @@ export async function POST(req: Request) {
     itemsSnapshot.push({
       productId: String(row.id),
       slug: String(row.slug),
-      title: String(row.name),
+      title: formatProductVariantTitle(String(row.name), item.colorName),
       unitPrice,
       qty: item.qty,
       image: item.colorImage || (row.cover ? String(row.cover) : null),

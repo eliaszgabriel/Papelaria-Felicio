@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useCart } from "@/components/cart/CartContext";
+import { formatProductVariantTitle } from "@/lib/productVariantTitle";
 import { calculateMockShipping } from "@/lib/shipping";
 import { emitWishlistUpdated } from "@/lib/wishlistEvents";
 
@@ -43,8 +44,12 @@ type ProductInfoInput = {
 
 export default function ProductInfo({
   product,
+  selectedColorId: controlledSelectedColorId,
+  onSelectColor,
 }: {
   product: ProductInfoInput;
+  selectedColorId?: string;
+  onSelectColor?: (colorId: string) => void;
 }) {
   const { addItem } = useCart();
   const [qty, setQty] = useState(1);
@@ -80,11 +85,23 @@ export default function ProductInfo({
         : [],
     [product.colorOptions],
   );
-  const [selectedColorId, setSelectedColorId] = useState(
+  const [uncontrolledSelectedColorId, setUncontrolledSelectedColorId] = useState(
     colorOptions[0]?.id || "",
   );
+  const selectedColorId =
+    typeof controlledSelectedColorId === "string"
+      ? controlledSelectedColorId
+      : uncontrolledSelectedColorId;
   const selectedColor =
     colorOptions.find((option) => option.id === selectedColorId) || colorOptions[0] || null;
+
+  function updateSelectedColor(nextColorId: string) {
+    if (onSelectColor) {
+      onSelectColor(nextColorId);
+      return;
+    }
+    setUncontrolledSelectedColorId(nextColorId);
+  }
 
   useEffect(() => {
     setQty((current) => {
@@ -94,12 +111,26 @@ export default function ProductInfo({
   }, [maxQty]);
 
   useEffect(() => {
-    setSelectedColorId((current) => {
+    const resolveNextColorId = (current: string) => {
       if (!colorOptions.length) return "";
       if (colorOptions.some((option) => option.id === current)) return current;
       return colorOptions[0]?.id || "";
-    });
-  }, [colorOptions]);
+    };
+
+    if (typeof controlledSelectedColorId === "string") {
+      if (!colorOptions.length && controlledSelectedColorId) {
+        onSelectColor?.("");
+      } else if (
+        colorOptions.length &&
+        !colorOptions.some((option) => option.id === controlledSelectedColorId)
+      ) {
+        onSelectColor?.(resolveNextColorId(controlledSelectedColorId));
+      }
+      return;
+    }
+
+    setUncontrolledSelectedColorId((current) => resolveNextColorId(current));
+  }, [colorOptions, controlledSelectedColorId, onSelectColor]);
 
   useEffect(() => {
     async function init() {
@@ -209,9 +240,9 @@ export default function ProductInfo({
       {
         id: product.id,
         slug: product.slug,
-        title: product.title,
+        title: formatProductVariantTitle(product.title, selectedColor?.name),
         price: product.price,
-        image: product.image,
+        image: selectedColor?.imageUrl || product.image,
         stock: product.stock,
         productId: product.id,
         variantKey: selectedColor?.id || "default",
@@ -305,7 +336,7 @@ export default function ProductInfo({
                 <button
                   key={option.id}
                   type="button"
-                  onClick={() => setSelectedColorId(option.id)}
+                  onClick={() => updateSelectedColor(option.id)}
                   className={[
                     "inline-flex items-center gap-2 rounded-full border px-2.5 py-2 transition",
                     isSelected

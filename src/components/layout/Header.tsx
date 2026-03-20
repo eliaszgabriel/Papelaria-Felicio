@@ -14,6 +14,7 @@ import MiniCart from "@/components/cart/MiniCart";
 import { useCart } from "@/components/cart/CartContext";
 import { AUTH_STATE_CHANGED_EVENT } from "@/lib/authEvents";
 import { apiMe, type MeUser } from "@/lib/clientAuth";
+import { formatProductVariantTitle } from "@/lib/productVariantTitle";
 import { WISHLIST_UPDATED_EVENT } from "@/lib/wishlistEvents";
 import Icon from "../ui/Icon";
 import Container from "./Container";
@@ -425,6 +426,9 @@ function MobileHeader({
               ) : (
                 <ul className="space-y-3">
                   {cartItems.map((item) => (
+                    (() => {
+                      const displayTitle = formatProductVariantTitle(item.title, item.colorName);
+                      return (
                     <li
                       key={`${item.id}-${item.slug}`}
                       className="rounded-2xl border border-white/75 bg-white/88 p-4 shadow-soft"
@@ -436,16 +440,11 @@ function MobileHeader({
                             onClick={() => setMobileCartOpen(false)}
                             className="block truncate text-sm font-extrabold text-felicio-ink"
                           >
-                            {item.title}
+                            {displayTitle}
                           </Link>
                           <div className="mt-1 text-sm font-semibold text-felicio-ink/75">
                             {formatBRL(item.price)}
                           </div>
-                          {item.colorName && (
-                            <div className="mt-1 text-xs font-semibold text-felicio-ink/58">
-                              Cor: {item.colorName}
-                            </div>
-                          )}
                         </div>
 
                         <button
@@ -485,6 +484,8 @@ function MobileHeader({
                         </div>
                       </div>
                     </li>
+                      );
+                    })()
                   ))}
                 </ul>
               )}

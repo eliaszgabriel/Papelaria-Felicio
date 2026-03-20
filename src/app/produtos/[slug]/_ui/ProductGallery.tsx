@@ -6,9 +6,13 @@ import { useEffect, useMemo, useState } from "react";
 export default function ProductGallery({
   images,
   title,
+  activeIndex: controlledActiveIndex,
+  onSelectIndex,
 }: {
   images: string[];
   title: string;
+  activeIndex?: number;
+  onSelectIndex?: (index: number) => void;
 }) {
   const safeImages = useMemo(() => {
     const cleaned = (images || []).filter(Boolean);
@@ -17,7 +21,18 @@ export default function ProductGallery({
 
   const [active, setActive] = useState(0);
   const [zoom, setZoom] = useState(false);
-  const activeIndex = Math.min(active, safeImages.length - 1);
+  const activeIndex = Math.min(
+    typeof controlledActiveIndex === "number" ? controlledActiveIndex : active,
+    safeImages.length - 1,
+  );
+
+  function updateActive(nextIndex: number) {
+    if (onSelectIndex) {
+      onSelectIndex(nextIndex);
+      return;
+    }
+    setActive(nextIndex);
+  }
 
   useEffect(() => {
     if (typeof document === "undefined") return;
@@ -64,7 +79,7 @@ export default function ProductGallery({
             return (
               <button
                 key={`${src}-${idx}`}
-                onClick={() => setActive(idx)}
+                onClick={() => updateActive(idx)}
                 className={[
                   "shrink-0 rounded-2xl border p-1 transition-all",
                   "hover:-translate-y-0.5 hover:shadow-soft",

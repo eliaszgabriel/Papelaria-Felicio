@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import Container from "@/components/layout/Container";
 import { useCart } from "@/components/cart/CartContext";
+import { formatProductVariantTitle } from "@/lib/productVariantTitle";
 import { formatShippingPrice } from "@/lib/shipping";
 import { maskCEP } from "@/lib/validators";
 
@@ -171,6 +172,7 @@ export default function CartPageClient() {
                   <ul className="p-4 sm:p-6 space-y-3">
                     {items.map((it) => (
                       (() => {
+                        const displayTitle = formatProductVariantTitle(it.title, it.colorName);
                         const stockCount = Number(it.stock ?? 0);
                         const hasStockInfo = Number.isFinite(stockCount) && stockCount > 0;
                         const outOfStock = Number(it.stock ?? 1) <= 0 && typeof it.stock !== "undefined";
@@ -186,7 +188,7 @@ export default function CartPageClient() {
                             {it.image ? (
                               <Image
                                 src={it.image}
-                                alt={it.title}
+                                alt={displayTitle}
                                 width={80}
                                 height={80}
                                 className="h-full w-full object-cover"
@@ -203,18 +205,13 @@ export default function CartPageClient() {
                                 <Link
                                   href={`/produtos/${it.slug}`}
                                   className="block text-sm sm:text-base font-extrabold text-felicio-ink truncate"
-                                  title={it.title}
+                                  title={displayTitle}
                                 >
-                                  {it.title}
+                                  {displayTitle}
                                 </Link>
                                 <div className="mt-1 text-sm font-semibold text-felicio-ink/80">
                                   {formatBRL(it.price)}
                                 </div>
-                                {it.colorName && (
-                                  <div className="mt-1 text-xs font-semibold text-felicio-ink/60">
-                                    Cor: {it.colorName}
-                                  </div>
-                                )}
                                 {typeof it.stock !== "undefined" && (
                                   <div className="mt-2 text-xs font-semibold text-felicio-ink/55">
                                     {outOfStock

@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import ProductGallery from "./_ui/ProductGallery";
-import ProductInfo from "./_ui/ProductInfo";
+import ProductDetailShell from "./_ui/ProductDetailShell";
 import {
   getInternalJsonFetchOptions,
   getInternalSiteUrl,
@@ -170,15 +169,11 @@ export default async function ProdutoSlugPage({
           <span className="font-semibold text-felicio-ink/80">{product.name}</span>
         </nav>
 
-        <div className="mt-5 grid gap-6 lg:grid-cols-12 lg:gap-7">
-          <div className="lg:col-span-7">
-            <ProductGallery images={images} title={product.name} />
-          </div>
-
-          <div className="lg:col-span-5">
-            <ProductInfo product={productForInfo} />
-          </div>
-        </div>
+        <ProductDetailShell
+          title={product.name}
+          images={images}
+          product={productForInfo}
+        />
 
         <div className="mt-8 grid gap-5 lg:grid-cols-12">
           <div className="lg:col-span-8">

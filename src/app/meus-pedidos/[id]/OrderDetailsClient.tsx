@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import Container from "@/components/layout/Container";
 import { Order } from "@/lib/orders";
+import { formatProductVariantTitle } from "@/lib/productVariantTitle";
 
 const STATUS_STYLE: Record<
   Order["status"],
@@ -413,6 +414,7 @@ export default function OrderDetailsClient() {
 
                 <div className="mt-4 space-y-3">
                   {order.items.map((it) => {
+                    const displayTitle = formatProductVariantTitle(it.title, it.colorName);
                     const unit = Number(it.unitPrice ?? it.price ?? 0);
                     return (
                       <div
@@ -421,7 +423,7 @@ export default function OrderDetailsClient() {
                       >
                         <div className="min-w-0">
                           <div className="truncate font-extrabold text-felicio-ink/80">
-                            {it.title}
+                            {displayTitle}
                           </div>
                           <div className="mt-1 text-sm text-felicio-ink/60">
                             Quantidade: {it.qty}

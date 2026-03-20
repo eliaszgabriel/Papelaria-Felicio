@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { formatProductVariantTitle } from "@/lib/productVariantTitle";
 import { useCart } from "./CartContext";
 
 function formatBRL(value: number) {
@@ -90,6 +91,9 @@ export default function MiniCart({ trigger }: { trigger: React.ReactNode }) {
               ) : (
                 <ul className="space-y-2 p-3">
                   {items.map((it) => (
+                    (() => {
+                      const displayTitle = formatProductVariantTitle(it.title, it.colorName);
+                      return (
                     <li
                       key={`${it.id}-${it.slug}`}
                       className="rounded-xl border border-black/5 bg-white p-3 shadow-[0_10px_30px_rgba(0,0,0,0.06)] transition hover:bg-felicio-pink/5"
@@ -100,7 +104,7 @@ export default function MiniCart({ trigger }: { trigger: React.ReactNode }) {
                             // eslint-disable-next-line @next/next/no-img-element
                             <img
                               src={it.image}
-                              alt={it.title}
+                              alt={displayTitle}
                               className="h-full w-full object-cover"
                             />
                           ) : (
@@ -113,9 +117,9 @@ export default function MiniCart({ trigger }: { trigger: React.ReactNode }) {
                             href={`/produtos/${it.slug}`}
                             onClick={() => setOpen(false)}
                             className="block truncate text-sm font-semibold text-zinc-900"
-                            title={it.title}
+                            title={displayTitle}
                           >
-                            {it.title}
+                            {displayTitle}
                           </Link>
 
                           <div className="mt-1 flex items-center justify-between">
@@ -164,6 +168,8 @@ export default function MiniCart({ trigger }: { trigger: React.ReactNode }) {
                         </div>
                       </div>
                     </li>
+                      );
+                    })()
                   ))}
                 </ul>
               )}
