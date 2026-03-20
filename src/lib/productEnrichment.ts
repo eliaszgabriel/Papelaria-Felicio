@@ -45,6 +45,10 @@ const RULES: Rule[] = [
   { categoryId: "escritorio", subCategoryId: "Mesa", keywords: ["grampeador", "porta caneta", "porta-lapis", "porta lapis", "organizador de mesa"] },
   { categoryId: "escritorio", subCategoryId: "Arquivo", keywords: ["pasta", "arquivo", "fichario de mesa", "caixa arquivo"] },
   { categoryId: "escritorio", subCategoryId: "Organizacao", keywords: ["organizador", "prancheta", "bloco adesivo", "post-it", "planner de mesa"] },
+  { categoryId: "brinquedos", subCategoryId: "Educativo", keywords: ["educativo", "monta", "quebra cabeca", "quebra-cabeca", "didatico"] },
+  { categoryId: "brinquedos", subCategoryId: "Criativo", keywords: ["massinha", "slime", "brincadeira criativa", "artesanato infantil"] },
+  { categoryId: "brinquedos", subCategoryId: "Infantil", keywords: ["boneca", "carrinho", "pelucia", "brinquedo", "infantil"] },
+  { categoryId: "brinquedos", subCategoryId: "Colecionavel", keywords: ["colecionavel", "mini figura", "action figure"] },
   { categoryId: "mochilas", subCategoryId: "Escolar", keywords: ["mochila"] },
   { categoryId: "mochilas", subCategoryId: "Mini mochila", keywords: ["mini mochila"] },
   { categoryId: "presentes", subCategoryId: "Kits", keywords: ["kit presente", "presente", "gift"] },
@@ -87,6 +91,10 @@ const CATEGORY_COPY: Record<string, { lead: string; support: string }> = {
   escritorio: {
     lead: "Uma escolha pratica para organizar a mesa e deixar a rotina mais funcional.",
     support: "Combina com estudos, trabalho e detalhes que deixam o escritorio mais bonito.",
+  },
+  brinquedos: {
+    lead: "Uma escolha divertida para presentear, brincar e criar momentos especiais.",
+    support: "Combina com a rotina infantil e com produtos que trazem cor e leveza para o dia a dia.",
   },
   presentes: {
     lead: "Uma escolha carinhosa para presentear ou montar kits especiais.",

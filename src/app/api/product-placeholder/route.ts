@@ -61,6 +61,12 @@ const CATEGORY_THEME: Record<
     accent: "#5a6f81",
     label: "Escritorio",
   },
+  brinquedos: {
+    primary: "#ffe8f1",
+    secondary: "#fff5d8",
+    accent: "#88586f",
+    label: "Brinquedos",
+  },
   presentes: {
     primary: "#fff0d9",
     secondary: "#ffe7f6",

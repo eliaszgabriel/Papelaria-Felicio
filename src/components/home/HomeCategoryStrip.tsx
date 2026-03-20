@@ -27,8 +27,7 @@ export default async function HomeCategoryStrip() {
   const categoriesResponse = await getCategories();
   const categories = (Array.isArray(categoriesResponse.items)
     ? categoriesResponse.items
-    : []
-  ).slice(0, 6);
+    : []);
 
   if (!categories.length) return null;
 

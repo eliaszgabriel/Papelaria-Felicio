@@ -8,7 +8,8 @@ export const DEFAULT_CATEGORIES = [
   { id: "canetas", name: "Canetas", sortOrder: 7 },
   { id: "tesouras-reguas", name: "Tesouras e Reguas", sortOrder: 8 },
   { id: "escritorio", name: "Escritorio", sortOrder: 9 },
-  { id: "presentes", name: "Presentes", sortOrder: 10 },
+  { id: "brinquedos", name: "Brinquedos", sortOrder: 10 },
+  { id: "presentes", name: "Presentes", sortOrder: 11 },
 ] as const;
 
 export const CATEGORY_NAME_BY_ID = Object.fromEntries(
@@ -31,6 +32,7 @@ export const SUBCATEGORY_OPTIONS: Record<string, string[]> = {
   canetas: ["Gel", "Coloridas", "Kit", "Marca-texto", "Esferografica"],
   "tesouras-reguas": ["Tesoura", "Regua", "Kit geometrico", "Escolar"],
   escritorio: ["Organizacao", "Mesa", "Arquivo", "Acessorios"],
+  brinquedos: ["Educativo", "Criativo", "Infantil", "Colecionavel"],
   presentes: ["Kits", "Criativos", "Lembrancinhas", "Personalizados"],
 };
 

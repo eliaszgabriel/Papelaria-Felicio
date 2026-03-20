@@ -12,6 +12,7 @@ const THEME: Record<string, { primary: string; secondary: string; accent: string
   canetas: { primary: "#ffe6f3", secondary: "#ebfcff", accent: "#815a68" },
   "tesouras-reguas": { primary: "#e8fff4", secondary: "#fff8de", accent: "#5b7768" },
   escritorio: { primary: "#eef6ff", secondary: "#fff8e8", accent: "#5d6e82" },
+  brinquedos: { primary: "#ffe6ef", secondary: "#fff8d9", accent: "#8a5c72" },
   presentes: { primary: "#fff0dc", secondary: "#ffe9f6", accent: "#7c5f4c" },
 };
 
