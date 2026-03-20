@@ -32,6 +32,7 @@ type ProductUpdateBody = {
   color?: string | null;
   name?: string;
   slug?: string;
+  shortDescription?: string | null;
   description?: string | null;
   price?: number | string;
   compareAtPrice?: number | string | null;
@@ -187,14 +188,15 @@ export async function PATCH(
     await pool.query(
       `
       UPDATE products
-      SET slug=$1, name=$2, description=$3, price=$4, compareatprice=$5, stock=$6, sku=$7, active=$8,
-          categoryid=$9, subcategoryid=$10, color=$11, inmovingshowcase=$12, featured=$13, deal=$14, iscollection=$15, isweeklyfavorite=$16,
-          externalsource=$17, externalsku=$18, syncstock=$19, syncprice=$20, lastsyncedat=$21, updatedat=$22
-      WHERE id=$23
+      SET slug=$1, name=$2, shortdescription=$3, description=$4, price=$5, compareatprice=$6, stock=$7, sku=$8, active=$9,
+          categoryid=$10, subcategoryid=$11, color=$12, inmovingshowcase=$13, featured=$14, deal=$15, iscollection=$16, isweeklyfavorite=$17,
+          externalsource=$18, externalsku=$19, syncstock=$20, syncprice=$21, lastsyncedat=$22, updatedat=$23
+      WHERE id=$24
       `,
       [
         slug,
         name,
+        body?.shortDescription ?? null,
         body?.description ?? null,
         Number(body?.price || 0),
         body?.compareAtPrice ?? null,
@@ -223,7 +225,7 @@ export async function PATCH(
     db.prepare(
       `
       UPDATE products
-      SET slug=?, name=?, description=?, price=?, compareAtPrice=?, stock=?, sku=?, active=?,
+      SET slug=?, name=?, shortDescription=?, description=?, price=?, compareAtPrice=?, stock=?, sku=?, active=?,
           categoryId=?, subCategoryId=?, color=?, inMovingShowcase=?, featured=?, deal=?, isCollection=?, isWeeklyFavorite=?,
           externalSource=?, externalSku=?, syncStock=?, syncPrice=?, lastSyncedAt=?, updatedAt=?
       WHERE id=?
@@ -231,6 +233,7 @@ export async function PATCH(
     ).run(
       slug,
       name,
+      body?.shortDescription ?? null,
       body?.description ?? null,
       Number(body?.price || 0),
       body?.compareAtPrice ?? null,

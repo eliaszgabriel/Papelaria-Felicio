@@ -20,6 +20,7 @@ type ProductResponse = {
     id: string | number;
     slug: string;
     name: string;
+    shortDescription?: string | null;
     price: number;
     compareAtPrice?: number | null;
     description?: string | null;
@@ -130,6 +131,7 @@ export default async function ProdutoSlugPage({
     price: Number(product.price || 0),
     oldPrice: product.compareAtPrice ? Number(product.compareAtPrice) : undefined,
     short:
+      (product.shortDescription || "").trim() ||
       description ||
       "Um produto especial da Papelaria Felicio para deixar sua rotina mais leve e bonita.",
     image: mainImage || undefined,

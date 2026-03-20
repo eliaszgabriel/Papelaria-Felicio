@@ -7,6 +7,7 @@ type ProductRow = {
   id: string | number;
   slug: string;
   name: string;
+  shortDescription: string | null;
   description: string | null;
   price: number;
   compareAtPrice: number | null;
@@ -39,6 +40,7 @@ export async function GET(
          id,
          slug,
          name,
+         shortdescription AS "shortDescription",
          description,
          price,
          compareatprice AS "compareAtPrice",

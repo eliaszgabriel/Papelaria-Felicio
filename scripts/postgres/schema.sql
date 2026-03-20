@@ -45,6 +45,7 @@ CREATE TABLE IF NOT EXISTS products (
   id TEXT PRIMARY KEY,
   slug TEXT NOT NULL UNIQUE,
   name TEXT NOT NULL,
+  shortDescription TEXT,
   description TEXT,
   price DOUBLE PRECISION NOT NULL,
   compareAtPrice DOUBLE PRECISION,

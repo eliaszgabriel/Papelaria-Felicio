@@ -11,6 +11,7 @@ type ProductRow = {
   id: string;
   slug: string;
   name: string;
+  shortDescription: string | null;
   description: string | null;
   price: number;
   compareAtPrice: number | null;
@@ -67,6 +68,7 @@ type ProductBody = {
   id?: string;
   name?: string;
   slug?: string;
+  shortDescription?: string | null;
   description?: string | null;
   price?: number | string;
   compareAtPrice?: number | string | null;
@@ -121,7 +123,35 @@ export async function GET(req: Request) {
     if (hasPostgresConfig()) {
       const pool = getPostgresPool();
       const result = await pool.query<ProductRow>(
-        `SELECT * FROM products WHERE id = $1 LIMIT 1`,
+        `SELECT
+           id,
+           slug,
+           name,
+           shortdescription AS "shortDescription",
+           description,
+           price,
+           compareatprice AS "compareAtPrice",
+           stock,
+           sku,
+           active,
+           categoryid AS "categoryId",
+           subcategoryid AS "subCategoryId",
+           color,
+           inmovingshowcase AS "inMovingShowcase",
+           featured,
+           deal,
+           iscollection AS "isCollection",
+           isweeklyfavorite AS "isWeeklyFavorite",
+           externalsource AS "externalSource",
+           externalsku AS "externalSku",
+           syncstock AS "syncStock",
+           syncprice AS "syncPrice",
+           lastsyncedat AS "lastSyncedAt",
+           createdat AS "createdAt",
+           updatedat AS "updatedAt"
+         FROM products
+         WHERE id = $1
+         LIMIT 1`,
         [id],
       );
       product = result.rows[0];
@@ -262,6 +292,7 @@ export async function GET(req: Request) {
         p.id,
         p.slug,
         p.name,
+        p.shortdescription AS "shortDescription",
         p.description,
         p.price,
         p.compareatprice AS "compareAtPrice",
@@ -447,15 +478,16 @@ export async function POST(req: Request) {
       await client.query("BEGIN");
       await client.query(
         `INSERT INTO products (
-          id, slug, name, description, price, compareatprice, stock, sku, active,
+          id, slug, name, shortdescription, description, price, compareatprice, stock, sku, active,
           categoryid, subcategoryid, color, inmovingshowcase, featured, deal, iscollection, isweeklyfavorite,
           externalsource, externalsku, syncstock, syncprice, lastsyncedat, createdat, updatedat
         )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24)`,
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25)`,
         [
           id,
           slug,
           name,
+          body?.shortDescription ?? null,
           body?.description ?? null,
           Number(body?.price || 0),
           body?.compareAtPrice ?? null,
@@ -515,15 +547,16 @@ export async function POST(req: Request) {
     const { db } = await import("@/lib/db");
     db.prepare(
       `INSERT INTO products (
-        id, slug, name, description, price, compareAtPrice, stock, sku, active,
+        id, slug, name, shortDescription, description, price, compareAtPrice, stock, sku, active,
         categoryId, subCategoryId, color, inMovingShowcase, featured, deal, isCollection, isWeeklyFavorite,
         externalSource, externalSku, syncStock, syncPrice, lastSyncedAt, createdAt, updatedAt
       )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)` ,
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)` ,
     ).run(
       id,
       slug,
       name,
+      body?.shortDescription ?? null,
       body?.description ?? null,
       Number(body?.price || 0),
       body?.compareAtPrice ?? null,

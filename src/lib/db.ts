@@ -36,6 +36,7 @@ db.exec(`
     id TEXT PRIMARY KEY,
     slug TEXT NOT NULL UNIQUE,
     name TEXT NOT NULL,
+    shortDescription TEXT,
     description TEXT,
     price REAL NOT NULL,
     compareAtPrice REAL,
@@ -92,6 +93,10 @@ try {
 
 try {
   db.exec(`ALTER TABLE orders ADD COLUMN shippingAmount REAL NOT NULL DEFAULT 0`);
+} catch {}
+
+try {
+  db.exec(`ALTER TABLE products ADD COLUMN shortDescription TEXT`);
 } catch {}
 
 try {

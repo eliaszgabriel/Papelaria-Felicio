@@ -12,6 +12,7 @@ type Product = {
   id: string;
   slug: string;
   name: string;
+  shortDescription: string | null;
   description: string | null;
   price: number;
   compareAtPrice: number | null;
@@ -52,6 +53,7 @@ export default function AdminProductEditClient({ mode, id }: { mode: Mode; id?: 
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [slugTouched, setSlugTouched] = useState(mode === "edit");
+  const [shortDescription, setShortDescription] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("29.90");
   const [compareAtPrice, setCompareAtPrice] = useState("");
@@ -109,6 +111,7 @@ export default function AdminProductEditClient({ mode, id }: { mode: Mode; id?: 
         const product: Product = data.product;
         setName(product.name || "");
         setSlug(product.slug || "");
+        setShortDescription(product.shortDescription || "");
         setDescription(product.description || "");
         setPrice(String(product.price ?? 0));
         setCompareAtPrice(product.compareAtPrice ? String(product.compareAtPrice) : "");
@@ -160,6 +163,10 @@ export default function AdminProductEditClient({ mode, id }: { mode: Mode; id?: 
       description,
     });
 
+    if (!shortDescription.trim()) {
+      setShortDescription(suggestion.description);
+    }
+
     if (!description.trim()) {
       setDescription(suggestion.description);
     }
@@ -192,6 +199,7 @@ export default function AdminProductEditClient({ mode, id }: { mode: Mode; id?: 
       id,
       name: name.trim(),
       slug: slug.trim() || slugify(name),
+      shortDescription: shortDescription.trim() || null,
       description: description.trim() || null,
       price: Number(String(price).replace(",", ".")) || 0,
       compareAtPrice: compareAtPrice.trim() === "" ? null : Number(String(compareAtPrice).replace(",", ".")) || null,
@@ -383,10 +391,25 @@ export default function AdminProductEditClient({ mode, id }: { mode: Mode; id?: 
                     </div>
                   </div>
 
-                  <div className="grid gap-3 lg:grid-cols-2">
+                  <div className="grid gap-3">
                     <div>
-                      <label className="text-xs font-semibold text-felicio-ink/60">Descricao</label>
-                      <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={4} className="mt-1 w-full rounded-2xl border border-black/5 bg-white px-4 py-3 text-sm text-felicio-ink/80 outline-none" />
+                      <label className="text-xs font-semibold text-felicio-ink/60">Resumo curto do topo</label>
+                      <textarea value={shortDescription} onChange={(e) => setShortDescription(e.target.value)} rows={4} className="mt-1 w-full rounded-2xl border border-black/5 bg-white px-4 py-3 text-sm text-felicio-ink/80 outline-none" />
+                      <div className="mt-1 text-[11px] text-felicio-ink/50">Esse texto aparece logo abaixo do nome do produto.</div>
+                    </div>
+                    <div>
+                      <label className="text-xs font-semibold text-felicio-ink/60">Descricao completa</label>
+                      <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={6} className="mt-1 w-full rounded-2xl border border-black/5 bg-white px-4 py-3 text-sm text-felicio-ink/80 outline-none" />
+                    </div>
+                  </div>
+
+                  <div className="grid gap-3 lg:grid-cols-2">
+                    <div className="rounded-2xl border border-black/5 bg-white/70 p-4 text-sm text-felicio-ink/65">
+                      <div className="text-xs font-extrabold uppercase tracking-[0.16em] text-felicio-ink/45">Textos</div>
+                      <div className="mt-3 space-y-2">
+                        <div><b>Resumo curto:</b> {shortDescription.trim() ? "Preenchido" : "Vai usar a descricao completa como fallback"}</div>
+                        <div><b>Descricao completa:</b> {description.trim() ? "Preenchida" : "Vazia"}</div>
+                      </div>
                     </div>
                     <div className="rounded-2xl border border-black/5 bg-white/70 p-4 text-sm text-felicio-ink/65">
                       <div className="text-xs font-extrabold uppercase tracking-[0.16em] text-felicio-ink/45">Visao rapida</div>
@@ -467,6 +490,7 @@ export default function AdminProductEditClient({ mode, id }: { mode: Mode; id?: 
                     <div className="mt-3 space-y-3 text-sm text-felicio-ink/68">
                       <div><b>Nome:</b> {name || "Sem nome"}</div>
                       <div><b>Slug:</b> {slug || slugify(name) || "-"}</div>
+                      <div><b>Resumo curto:</b> {shortDescription.trim() ? "Configurado" : "Usando fallback"}</div>
                       <div><b>Status:</b> {active ? "Ativo" : "Inativo"}</div>
                       <div><b>Imagens:</b> {parsedUrls.length}</div>
                       <div><b>Origem:</b> {isOlistProduct ? "Olist ERP" : "Site"}</div>
