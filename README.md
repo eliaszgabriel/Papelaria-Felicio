@@ -153,9 +153,12 @@ OLIST_ORDER_SEARCH_URL=https://api.tiny.com.br/api2/pedidos.pesquisa.php
 OLIST_ORDER_LAUNCH_STOCK_URL=https://api.tiny.com.br/api2/pedido.lancar.estoque.php
 OLIST_USE_STOCK_ENDPOINT=0
 OLIST_SYNC_SECRET=troque-este-segredo
-OLIST_SYNC_BATCH_SIZE=10
+OLIST_SYNC_BATCH_SIZE=1
 OLIST_SYNC_PAGES_PER_RUN=1
 OLIST_SYNC_PAUSE_MS=1200
+OLIST_SYNC_FORCE_STOCK_ENDPOINT=1
+OLIST_SYNC_STEP_DELAY_MS=2000
+OLIST_SYNC_RETRY_DELAY_MS=5000
 ```
 
 No admin de produtos voce pode:
@@ -174,7 +177,7 @@ Quando um pedido do site for aprovado via Pix ou Mercado Pago, o projeto tambem 
 
 Isso ajuda a reduzir conflito entre loja fisica e loja virtual quando o Tiny e a fonte central de estoque.
 
-## Sync agendado do Tiny
+## Sync continuo do Tiny
 
 Ha uma rota preparada para sync automatico:
 
@@ -195,12 +198,20 @@ curl -X POST "https://www.papelariafelicio.com.br/api/cron/olist/sync" \
   -H "x-olist-sync-secret: SEU_SEGREDO"
 ```
 
-Sugestao de rotina:
+O projeto tambem inclui um worker para rodar em loop:
 
-- a cada 5 minutos para reduzir conflito entre loja fisica e site
-- a cada 30 minutos se quiser aliviar chamadas no Tiny
+```bash
+npm run olist:sync:worker
+```
 
-A rota guarda cursor interno, entao cada execucao continua de onde a anterior parou.
+Comportamento recomendado:
+
+- sincroniza 1 produto por vez
+- espera 2 segundos entre cada passo
+- se a Tiny bloquear temporariamente, espera 5 segundos e retoma
+- ao chegar ao fim do catalogo, reinicia do comeco
+
+A rota guarda cursor interno, entao cada execucao continua de onde a anterior parou. Quando o cursor ultrapassa a ultima pagina, ele e reiniciado automaticamente.
 
 ## Sync imediato por SKU
 

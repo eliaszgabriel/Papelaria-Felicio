@@ -18,6 +18,17 @@ function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+function isOlistRateLimitError(error: unknown) {
+  if (!(error instanceof Error)) return false;
+
+  const message = error.message.toLowerCase();
+  return (
+    message.includes("excedido o numero de acessos") ||
+    message.includes("api bloqueada") ||
+    message.includes("too many requests")
+  );
+}
+
 function isOlistPageOverflowError(error: unknown) {
   if (!(error instanceof Error)) return false;
 
@@ -35,6 +46,7 @@ async function runSyncBatch(
   batchSize: number,
   pagesPerRun: number,
   pauseMs: number,
+  forceStockEndpoint: boolean,
 ) {
   let currentPage = startPage;
   let currentOffset = startOffset;
@@ -42,12 +54,15 @@ async function runSyncBatch(
   let created = 0;
   let updated = 0;
   let skipped = 0;
+  let hasMore = false;
+  let mode: "partners" | "tiny" = "tiny";
 
   for (let index = 0; index < pagesPerRun; index += 1) {
     const result = await fetchOlistProducts({
       page: currentPage,
       offset: currentOffset,
       batchSize,
+      forceStockEndpoint,
     });
     const imported = await importOlistProducts(result.items);
 
@@ -55,6 +70,8 @@ async function runSyncBatch(
     created += imported.created;
     updated += imported.updated;
     skipped += imported.skipped;
+    hasMore = result.hasMore;
+    mode = result.mode;
     currentPage = result.nextPage;
     currentOffset = result.nextOffset;
 
@@ -68,6 +85,8 @@ async function runSyncBatch(
     created,
     updated,
     skipped,
+    hasMore,
+    mode,
     currentPage,
     currentOffset,
   };
@@ -88,7 +107,7 @@ export async function POST(request: Request) {
   const cursor = await getOlistSyncCursor();
   const batchSize = Math.min(
     20,
-    Math.max(1, Number(process.env.OLIST_SYNC_BATCH_SIZE || 10)),
+    Math.max(1, Number(process.env.OLIST_SYNC_BATCH_SIZE || 1)),
   );
   const pagesPerRun = Math.min(
     5,
@@ -98,6 +117,12 @@ export async function POST(request: Request) {
     5000,
     Math.max(0, Number(process.env.OLIST_SYNC_PAUSE_MS || 1200)),
   );
+  const retryDelayMs = Math.min(
+    15000,
+    Math.max(1000, Number(process.env.OLIST_SYNC_RETRY_DELAY_MS || 5000)),
+  );
+  const forceStockEndpoint =
+    String(process.env.OLIST_SYNC_FORCE_STOCK_ENDPOINT || "1").trim() !== "0";
 
   try {
     const result = await runSyncBatch(
@@ -106,6 +131,7 @@ export async function POST(request: Request) {
       batchSize,
       pagesPerRun,
       pauseMs,
+      forceStockEndpoint,
     );
 
     await saveOlistSyncCursor(result.currentPage, result.currentOffset);
@@ -120,15 +146,37 @@ export async function POST(request: Request) {
       offsetStart: cursor.offset,
       nextPage: result.currentPage,
       nextOffset: result.currentOffset,
+      hasMore: result.hasMore,
+      mode: result.mode,
       batchSize,
       pagesPerRun,
+      forceStockEndpoint,
     });
   } catch (error) {
+    if (isOlistRateLimitError(error)) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: error instanceof Error ? error.message : "olist_sync_rate_limited",
+          rateLimited: true,
+          retryAfterMs: retryDelayMs,
+        },
+        { status: 429 },
+      );
+    }
+
     if (isOlistPageOverflowError(error)) {
       await saveOlistSyncCursor(1, 0);
 
       try {
-        const restarted = await runSyncBatch(1, 0, batchSize, pagesPerRun, pauseMs);
+        const restarted = await runSyncBatch(
+          1,
+          0,
+          batchSize,
+          pagesPerRun,
+          pauseMs,
+          forceStockEndpoint,
+        );
         await saveOlistSyncCursor(restarted.currentPage, restarted.currentOffset);
 
         return NextResponse.json({
@@ -141,11 +189,29 @@ export async function POST(request: Request) {
           offsetStart: 0,
           nextPage: restarted.currentPage,
           nextOffset: restarted.currentOffset,
+          hasMore: restarted.hasMore,
+          mode: restarted.mode,
           batchSize,
           pagesPerRun,
+          forceStockEndpoint,
           restartedFromBeginning: true,
         });
       } catch (restartError) {
+        if (isOlistRateLimitError(restartError)) {
+          return NextResponse.json(
+            {
+              ok: false,
+              error:
+                restartError instanceof Error
+                  ? restartError.message
+                  : "olist_sync_rate_limited",
+              rateLimited: true,
+              retryAfterMs: retryDelayMs,
+            },
+            { status: 429 },
+          );
+        }
+
         return NextResponse.json(
           {
             ok: false,
