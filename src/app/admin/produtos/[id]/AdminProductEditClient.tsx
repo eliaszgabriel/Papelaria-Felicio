@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import Container from "@/components/layout/Container";
 import { COLOR_OPTIONS, SUBCATEGORY_OPTIONS } from "@/lib/catalog";
+import { suggestProductEnrichment } from "@/lib/productEnrichment";
 import AppToast, { type AppToastState } from "@/components/ui/AppToast";
 
 type Mode = "create" | "edit";
@@ -150,6 +151,37 @@ export default function AdminProductEditClient({ mode, id }: { mode: Mode; id?: 
       if (subCategoryId && nextPrimary && !(SUBCATEGORY_OPTIONS[nextPrimary] ?? []).includes(subCategoryId)) setSubCategoryId("");
       if (!nextPrimary) setSubCategoryId("");
       return next;
+    });
+  }
+
+  function applySmartSuggestion() {
+    const suggestion = suggestProductEnrichment({
+      name,
+      description,
+    });
+
+    if (!description.trim()) {
+      setDescription(suggestion.description);
+    }
+
+    if (!categoryIds.length && suggestion.categoryIds.length) {
+      setCategoryIds(suggestion.categoryIds);
+      if (suggestion.subCategoryId) {
+        setSubCategoryId(suggestion.subCategoryId);
+      }
+    } else if (!subCategoryId && suggestion.subCategoryId) {
+      setSubCategoryId(suggestion.subCategoryId);
+    }
+
+    if (!parsedUrls.length) {
+      setImageUrls(`${suggestion.imageUrl}\n`);
+    }
+
+    setToast({
+      open: true,
+      title: "Sugestao aplicada",
+      message: "Preenchemos categoria, descricao e uma capa ilustrada como teste.",
+      tone: "success",
     });
   }
 
@@ -363,6 +395,13 @@ export default function AdminProductEditClient({ mode, id }: { mode: Mode; id?: 
                         <div><b>Subcategoria:</b> {subCategoryId || "Nao definida"}</div>
                         <div><b>Cor:</b> {color || "Nao definida"}</div>
                       </div>
+                      <button
+                        type="button"
+                        onClick={applySmartSuggestion}
+                        className="mt-4 rounded-full border border-felicio-lilac/25 bg-felicio-lilac/12 px-4 py-2 text-xs font-bold text-felicio-ink/80 transition hover:bg-felicio-lilac/18"
+                      >
+                        Sugerir categoria, descricao e capa
+                      </button>
                     </div>
                   </div>
 
