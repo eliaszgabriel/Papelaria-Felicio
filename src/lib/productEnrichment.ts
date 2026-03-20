@@ -45,23 +45,39 @@ const RULES: Rule[] = [
   { categoryId: "fofuras", subCategoryId: "Decor", keywords: ["fofo", "fofura", "pelucia", "decor"] },
 ];
 
-const CATEGORY_COPY: Record<string, string> = {
-  mochilas:
-    "Uma peca pensada para acompanhar a rotina com praticidade, charme e aquele toque delicado que combina com a vitrine da Papelaria Felicio.",
-  cadernos:
-    "Ideal para estudos, organizacao e rotina criativa, com um visual leve e funcional para deixar a papelaria ainda mais bonita.",
-  papeis:
-    "Um item versatil para escrita, organizacao e projetos do dia a dia, perfeito para quem gosta de papelaria util com visual delicado.",
-  fofuras:
-    "Uma escolha charmosa para deixar a rotina mais leve, decorar a mesa e transformar pequenos detalhes em algo especial.",
-  desenhos:
-    "Perfeito para momentos criativos, estudos e projetos artisticos, com uma proposta leve e inspiradora para o dia a dia.",
-  "agendas-planners":
-    "Uma opcao pensada para organizar compromissos, estudos e rotina com mais leveza, praticidade e um toque carinhoso.",
-  canetas:
-    "Perfeita para escrita, estudos e organizacao, com um visual delicado que deixa a rotina mais bonita e gostosa de usar.",
-  presentes:
-    "Uma escolha carinhosa para presentear, montar kits especiais e transformar a papelaria em uma experiencia ainda mais encantadora.",
+const CATEGORY_COPY: Record<string, { lead: string; support: string }> = {
+  mochilas: {
+    lead: "Uma peca pensada para acompanhar a rotina com praticidade e charme.",
+    support: "Combina com escola, passeio e organizacao do dia a dia.",
+  },
+  cadernos: {
+    lead: "Ideal para estudos, anotacoes e rotina criativa.",
+    support: "Uma opcao leve e funcional para deixar a papelaria ainda mais bonita.",
+  },
+  papeis: {
+    lead: "Um item versatil para escrita, organizacao e projetos do dia a dia.",
+    support: "Perfeito para quem gosta de papelaria util com visual delicado.",
+  },
+  fofuras: {
+    lead: "Uma escolha charmosa para deixar a rotina mais leve.",
+    support: "Tambem funciona muito bem para decoracao, kits e pequenos detalhes especiais.",
+  },
+  desenhos: {
+    lead: "Perfeito para momentos criativos, estudos e projetos artisticos.",
+    support: "Traz um visual leve e inspirador para o uso diario.",
+  },
+  "agendas-planners": {
+    lead: "Uma opcao pensada para organizar compromissos, estudos e rotina.",
+    support: "Ajuda a planejar o dia com mais leveza e praticidade.",
+  },
+  canetas: {
+    lead: "Perfeita para escrita, estudos e organizacao.",
+    support: "Deixa a rotina mais bonita e gostosa de usar.",
+  },
+  presentes: {
+    lead: "Uma escolha carinhosa para presentear ou montar kits especiais.",
+    support: "Ajuda a transformar a papelaria em uma experiencia ainda mais encantadora.",
+  },
 };
 
 function normalizeText(value: string) {
@@ -93,7 +109,7 @@ function buildDescription(name: string, categoryId: string | null, existingDescr
   if (trimmedExisting) return trimmedExisting;
 
   const base = categoryId ? CATEGORY_COPY[categoryId] : CATEGORY_COPY.presentes;
-  return `${capitalizeFirst(name.trim())}. ${base}`;
+  return `${capitalizeFirst(name.trim())}.\n\n${base.lead} ${base.support}`;
 }
 
 function buildPlaceholderUrl(name: string, categoryId: string | null) {

@@ -53,6 +53,9 @@ export default function ProductCard({
   const badges = Array.isArray(product.badges)
     ? product.badges.filter(Boolean).slice(0, 2)
     : [];
+  const isGeneratedPlaceholder = Boolean(
+    product.image?.startsWith("/api/product-placeholder?"),
+  );
   const titleClampStyle = compact
     ? {
         display: "-webkit-box",
@@ -94,7 +97,10 @@ export default function ProductCard({
               width={640}
               height={640}
               className={[
-                "w-full object-cover transition duration-500 group-hover:scale-[1.06]",
+                "w-full transition duration-500",
+                isGeneratedPlaceholder
+                  ? "bg-white/65 object-contain p-3 group-hover:scale-[1.02]"
+                  : "object-cover group-hover:scale-[1.06]",
                 compact ? "h-[126px] sm:h-[158px]" : "h-[220px]",
               ].join(" ")}
               loading="lazy"
