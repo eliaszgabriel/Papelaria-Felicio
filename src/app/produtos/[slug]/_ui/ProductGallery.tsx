@@ -81,7 +81,7 @@ export default function ProductGallery({
           aria-modal="true"
         >
           <div
-            className="relative w-full max-w-5xl overflow-hidden rounded-3xl border border-white/40 bg-white/95 shadow-[0_30px_120px_rgba(0,0,0,0.35)]"
+            className="relative w-full max-w-3xl overflow-hidden rounded-3xl border border-white/40 bg-white/95 shadow-[0_30px_120px_rgba(0,0,0,0.35)]"
             onClick={(e) => e.stopPropagation()}
           >
             <button
@@ -91,14 +91,14 @@ export default function ProductGallery({
               Fechar
             </button>
 
-            <div className="p-6">
-              <div className="flex h-[75vh] w-full items-center justify-center rounded-2xl bg-gradient-to-br from-white via-felicio-pink/10 to-felicio-lilac/10">
+            <div className="p-4 sm:p-5">
+              <div className="flex h-[58vh] w-full items-center justify-center rounded-2xl bg-gradient-to-br from-white via-felicio-pink/10 to-felicio-lilac/10 sm:h-[62vh]">
                 <Image
                   src={safeImages[activeIndex]}
                   alt={title}
                   width={1400}
                   height={1400}
-                  className="max-h-[70vh] w-full object-contain"
+                  className="max-h-[52vh] w-full object-contain sm:max-h-[56vh]"
                   unoptimized
                 />
               </div>
