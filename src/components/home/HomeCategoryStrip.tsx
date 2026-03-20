@@ -12,6 +12,14 @@ type CategoriesResponse = {
   items: Category[];
 };
 
+const FEATURED_CATEGORY_IDS = [
+  "mochilas",
+  "cadernos",
+  "fofuras",
+  "desenhos",
+  "escritorio",
+] as const;
+
 async function getCategories() {
   const base = getInternalSiteUrl();
   const res = await fetch(`${base}/api/categories`, getInternalJsonFetchOptions());
@@ -25,9 +33,12 @@ async function getCategories() {
 
 export default async function HomeCategoryStrip() {
   const categoriesResponse = await getCategories();
-  const categories = (Array.isArray(categoriesResponse.items)
+  const allCategories = Array.isArray(categoriesResponse.items)
     ? categoriesResponse.items
-    : []);
+    : [];
+  const categories = FEATURED_CATEGORY_IDS.map((categoryId) =>
+    allCategories.find((category) => String(category.id) === categoryId),
+  ).filter((category): category is Category => Boolean(category));
 
   if (!categories.length) return null;
 
