@@ -41,6 +41,8 @@ export default function ProductDetailShell({
   );
   const [selectedColorId, setSelectedColorId] = useState(colorOptions[0]?.id || "");
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const selectedColor =
+    colorOptions.find((option) => option.id === selectedColorId) || colorOptions[0] || null;
 
   function handleSelectColor(nextColorId: string) {
     setSelectedColorId(nextColorId);
@@ -62,6 +64,7 @@ export default function ProductDetailShell({
           title={title}
           activeIndex={activeImageIndex}
           onSelectIndex={setActiveImageIndex}
+          preferredImage={selectedColor?.imageUrl}
         />
       </div>
 

@@ -191,6 +191,7 @@ export default function AdminProductEditClient({ mode, id }: { mode: Mode; id?: 
           id: createColorOptionId(optionName),
           name: optionName,
           imageUrl: "",
+          includeInGallery: false,
           source: "preset",
         },
       ];
@@ -228,6 +229,7 @@ export default function AdminProductEditClient({ mode, id }: { mode: Mode; id?: 
         id: createColorOptionId(name),
         name,
         imageUrl,
+        includeInGallery: false,
         source: "custom",
       },
     ]);
@@ -473,7 +475,7 @@ export default function AdminProductEditClient({ mode, id }: { mode: Mode; id?: 
                   <div className="rounded-2xl border border-black/5 bg-white/70 p-4">
                     <div className="text-sm font-bold text-felicio-ink/72">Cores com foto</div>
                     <div className="mt-1 text-xs text-felicio-ink/55">
-                      Selecione as cores que esse produto possui e cole a imagem de cada uma. Essas fotos entram na galeria e na escolha da compra.
+                      Selecione as cores que esse produto possui e cole a imagem de cada uma. A miniatura da cor sempre aparece na escolha da compra, e voce decide se ela tambem entra na galeria de fotos.
                     </div>
 
                     <div className="mt-4 flex flex-wrap gap-2">
@@ -525,6 +527,18 @@ export default function AdminProductEditClient({ mode, id }: { mode: Mode; id?: 
                               placeholder="Cole o link da foto que representa essa cor"
                               className="mt-3 w-full rounded-2xl border border-black/5 bg-white px-4 py-3 text-sm text-felicio-ink/80 outline-none"
                             />
+                            <label className="mt-3 inline-flex items-center gap-2 text-xs font-semibold text-felicio-ink/65">
+                              <input
+                                type="checkbox"
+                                checked={Boolean(option.includeInGallery)}
+                                onChange={(e) =>
+                                  updateColorOption(option.id, {
+                                    includeInGallery: e.target.checked,
+                                  })
+                                }
+                              />
+                              Levar essa imagem para a galeria de fotos do produto
+                            </label>
                           </div>
                         ))}
                       </div>

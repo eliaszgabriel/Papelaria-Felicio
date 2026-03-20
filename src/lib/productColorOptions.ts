@@ -2,6 +2,7 @@ export type ProductColorOption = {
   id: string;
   name: string;
   imageUrl: string;
+  includeInGallery?: boolean;
   source?: "preset" | "custom";
 };
 
@@ -37,6 +38,10 @@ export function normalizeProductColorOptions(input: unknown): ProductColorOption
     const row = raw as Record<string, unknown>;
     const name = String(row.name || "").trim();
     const imageUrl = String(row.imageUrl || row.url || "").trim();
+    const includeInGallery =
+      typeof row.includeInGallery === "undefined"
+        ? true
+        : Boolean(row.includeInGallery);
     const source =
       String(row.source || "").trim().toLowerCase() === "custom" ? "custom" : "preset";
 
@@ -51,6 +56,7 @@ export function normalizeProductColorOptions(input: unknown): ProductColorOption
       id,
       name,
       imageUrl,
+      includeInGallery,
       source,
     });
   }
@@ -93,6 +99,7 @@ export function mergeProductImagesWithColorOptions(
   }
 
   for (const option of colorOptions) {
+    if (!option.includeInGallery) continue;
     const url = String(option.imageUrl || "").trim();
     if (!url || seen.has(url)) continue;
     seen.add(url);

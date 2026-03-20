@@ -8,11 +8,13 @@ export default function ProductGallery({
   title,
   activeIndex: controlledActiveIndex,
   onSelectIndex,
+  preferredImage,
 }: {
   images: string[];
   title: string;
   activeIndex?: number;
   onSelectIndex?: (index: number) => void;
+  preferredImage?: string | null;
 }) {
   const safeImages = useMemo(() => {
     const cleaned = (images || []).filter(Boolean);
@@ -25,6 +27,7 @@ export default function ProductGallery({
     typeof controlledActiveIndex === "number" ? controlledActiveIndex : active,
     safeImages.length - 1,
   );
+  const displayImage = preferredImage || safeImages[activeIndex];
 
   function updateActive(nextIndex: number) {
     if (onSelectIndex) {
@@ -62,7 +65,7 @@ export default function ProductGallery({
         >
           <div className="flex h-[320px] w-full items-center justify-center sm:h-[360px] lg:h-[390px]">
             <Image
-              src={safeImages[activeIndex]}
+              src={displayImage}
               alt={title}
               width={900}
               height={900}
@@ -126,7 +129,7 @@ export default function ProductGallery({
             <div className="p-4 sm:p-5">
               <div className="flex h-[58vh] w-full items-center justify-center rounded-2xl bg-gradient-to-br from-white via-felicio-pink/10 to-felicio-lilac/10 sm:h-[62vh]">
                 <Image
-                  src={safeImages[activeIndex]}
+                  src={displayImage}
                   alt={title}
                   width={1400}
                   height={1400}
