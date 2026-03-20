@@ -39,6 +39,7 @@ type ProductInfoInput = {
     id: string;
     name: string;
     imageUrl: string;
+    includeInGallery?: boolean;
   }>;
 };
 

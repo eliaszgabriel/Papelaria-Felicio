@@ -8,6 +8,7 @@ type ProductColorOption = {
   id: string;
   name: string;
   imageUrl: string;
+  includeInGallery?: boolean;
 };
 
 type ProductInfoInput = {
@@ -48,7 +49,7 @@ export default function ProductDetailShell({
     setSelectedColorId(nextColorId);
 
     const nextColor = colorOptions.find((option) => option.id === nextColorId);
-    if (!nextColor?.imageUrl) return;
+    if (!nextColor?.imageUrl || !nextColor.includeInGallery) return;
 
     const nextImageIndex = images.findIndex((image) => image === nextColor.imageUrl);
     if (nextImageIndex >= 0) {
@@ -64,7 +65,9 @@ export default function ProductDetailShell({
           title={title}
           activeIndex={activeImageIndex}
           onSelectIndex={setActiveImageIndex}
-          preferredImage={selectedColor?.imageUrl}
+          preferredImage={
+            selectedColor?.includeInGallery ? selectedColor.imageUrl : undefined
+          }
         />
       </div>
 
