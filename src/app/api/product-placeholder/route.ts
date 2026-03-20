@@ -49,6 +49,12 @@ const CATEGORY_THEME: Record<
     accent: "#7f5a69",
     label: "Canetas",
   },
+  "tesouras-reguas": {
+    primary: "#e6fff2",
+    secondary: "#fff6df",
+    accent: "#5b7466",
+    label: "Tesouras e Reguas",
+  },
   presentes: {
     primary: "#fff0d9",
     secondary: "#ffe7f6",

@@ -39,6 +39,9 @@ const RULES: Rule[] = [
   { categoryId: "desenhos", subCategoryId: "Marcadores", keywords: ["marker", "marcador"] },
   { categoryId: "desenhos", subCategoryId: "Sketchbook", keywords: ["sketchbook"] },
   { categoryId: "desenhos", keywords: ["giz", "tinta", "pintura", "brush pen"] },
+  { categoryId: "tesouras-reguas", subCategoryId: "Tesoura", keywords: ["tesoura", "tesoura escolar", "tesoura infantil"] },
+  { categoryId: "tesouras-reguas", subCategoryId: "Regua", keywords: ["regua", "regua 15cm", "regua 30cm"] },
+  { categoryId: "tesouras-reguas", subCategoryId: "Kit geometrico", keywords: ["transferidor", "esquadro", "compasso", "geometria"] },
   { categoryId: "mochilas", subCategoryId: "Escolar", keywords: ["mochila"] },
   { categoryId: "mochilas", subCategoryId: "Mini mochila", keywords: ["mini mochila"] },
   { categoryId: "presentes", subCategoryId: "Kits", keywords: ["kit presente", "presente", "gift"] },
@@ -73,6 +76,10 @@ const CATEGORY_COPY: Record<string, { lead: string; support: string }> = {
   canetas: {
     lead: "Perfeita para escrita, estudos e organizacao.",
     support: "Deixa a rotina mais bonita e gostosa de usar.",
+  },
+  "tesouras-reguas": {
+    lead: "Uma opcao pratica para recorte, medicao e atividades escolares.",
+    support: "Ajuda a montar uma papelaria funcional para o uso do dia a dia.",
   },
   presentes: {
     lead: "Uma escolha carinhosa para presentear ou montar kits especiais.",

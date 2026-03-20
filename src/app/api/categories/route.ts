@@ -1,10 +1,13 @@
 import { NextResponse } from "next/server";
 import { CATEGORY_NAME_BY_ID, DEFAULT_CATEGORIES } from "@/lib/catalog";
+import { ensureDefaultCategories } from "@/lib/categories";
 import { getPostgresPool, hasPostgresConfig } from "@/lib/postgres";
 
 export const runtime = "nodejs";
 
 export async function GET() {
+  await ensureDefaultCategories();
+
   let rows: Array<{ id: string; name: string }> = [];
 
   if (hasPostgresConfig()) {
