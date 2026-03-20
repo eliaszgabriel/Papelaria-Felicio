@@ -68,6 +68,7 @@ export function runMigrations() {
       slug             TEXT    NOT NULL UNIQUE,
       name             TEXT    NOT NULL,
       shortDescription TEXT,
+      colorOptionsJson TEXT,
       description      TEXT,
       price            REAL    NOT NULL,
       compareAtPrice   REAL,
@@ -138,6 +139,7 @@ export function runMigrations() {
 
   addColumn(`ALTER TABLE products ADD COLUMN categoryId TEXT`);
   addColumn(`ALTER TABLE products ADD COLUMN shortDescription TEXT`);
+  addColumn(`ALTER TABLE products ADD COLUMN colorOptionsJson TEXT`);
   addColumn(`ALTER TABLE products ADD COLUMN subCategoryId TEXT`);
   addColumn(`ALTER TABLE products ADD COLUMN color TEXT`);
   addColumn(`ALTER TABLE products ADD COLUMN inMovingShowcase INTEGER NOT NULL DEFAULT 0`);

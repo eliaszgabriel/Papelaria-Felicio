@@ -15,6 +15,12 @@ type ProductImage = {
   sortOrder?: number | null;
 };
 
+type ProductColorOption = {
+  id: string;
+  name: string;
+  imageUrl: string;
+};
+
 type ProductResponse = {
   product?: {
     id: string | number;
@@ -27,6 +33,7 @@ type ProductResponse = {
     coverImage?: string | null;
     stock?: number | null;
     images?: ProductImage[];
+    colorOptions?: ProductColorOption[];
     isCollection?: number | null;
     isWeeklyFavorite?: number | null;
   };
@@ -115,11 +122,14 @@ export default async function ProdutoSlugPage({
     );
   }
 
-  const images = (product.images ?? [])
-    .slice()
-    .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
-    .map((image) => image.url)
-    .filter(Boolean);
+  const images = [
+    ...(product.images ?? [])
+      .slice()
+      .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
+      .map((image) => image.url)
+      .filter(Boolean),
+    ...((product.colorOptions ?? []).map((option) => option.imageUrl).filter(Boolean)),
+  ].filter((value, index, array) => array.indexOf(value) === index);
 
   const mainImage = images[0] || product.coverImage || "";
   const description = (product.description || "").trim();
@@ -136,6 +146,7 @@ export default async function ProdutoSlugPage({
       "Um produto especial da Papelaria Felicio para deixar sua rotina mais leve e bonita.",
     image: mainImage || undefined,
     stock: Number(product.stock ?? 0),
+    colorOptions: product.colorOptions ?? [],
     badges: [
       Number(product.isCollection ?? 0) === 1 ? "Colecao" : "",
       Number(product.isWeeklyFavorite ?? 0) === 1

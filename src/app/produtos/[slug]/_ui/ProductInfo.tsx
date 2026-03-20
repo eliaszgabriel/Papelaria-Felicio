@@ -1,6 +1,7 @@
 ﻿"use client";
 
-import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useCart } from "@/components/cart/CartContext";
 import { calculateMockShipping } from "@/lib/shipping";
 import { emitWishlistUpdated } from "@/lib/wishlistEvents";
@@ -33,6 +34,11 @@ type ProductInfoInput = {
   image?: string;
   stock: number;
   badges?: string[];
+  colorOptions?: Array<{
+    id: string;
+    name: string;
+    imageUrl: string;
+  }>;
 };
 
 export default function ProductInfo({
@@ -67,6 +73,18 @@ export default function ProductInfo({
   const badges = Array.isArray(product.badges)
     ? product.badges.filter(Boolean).slice(0, 2)
     : [];
+  const colorOptions = useMemo(
+    () =>
+      Array.isArray(product.colorOptions)
+        ? product.colorOptions.filter((option) => option?.name && option?.imageUrl)
+        : [],
+    [product.colorOptions],
+  );
+  const [selectedColorId, setSelectedColorId] = useState(
+    colorOptions[0]?.id || "",
+  );
+  const selectedColor =
+    colorOptions.find((option) => option.id === selectedColorId) || colorOptions[0] || null;
 
   useEffect(() => {
     setQty((current) => {
@@ -74,6 +92,14 @@ export default function ProductInfo({
       return Math.min(Math.max(1, current), maxQty);
     });
   }, [maxQty]);
+
+  useEffect(() => {
+    setSelectedColorId((current) => {
+      if (!colorOptions.length) return "";
+      if (colorOptions.some((option) => option.id === current)) return current;
+      return colorOptions[0]?.id || "";
+    });
+  }, [colorOptions]);
 
   useEffect(() => {
     async function init() {
@@ -187,6 +213,10 @@ export default function ProductInfo({
         price: product.price,
         image: product.image,
         stock: product.stock,
+        productId: product.id,
+        variantKey: selectedColor?.id || "default",
+        colorName: selectedColor?.name || undefined,
+        colorImage: selectedColor?.imageUrl || product.image,
       },
       safeQty,
     );
@@ -261,6 +291,45 @@ export default function ProductInfo({
           </div>
         )}
       </div>
+
+      {colorOptions.length > 0 && (
+        <div className="mt-5">
+          <div className="text-xs font-extrabold uppercase tracking-[0.16em] text-felicio-ink/48">
+            Cores disponiveis
+          </div>
+          <div className="mt-3 flex flex-wrap gap-2.5">
+            {colorOptions.map((option) => {
+              const isSelected = selectedColor?.id === option.id;
+
+              return (
+                <button
+                  key={option.id}
+                  type="button"
+                  onClick={() => setSelectedColorId(option.id)}
+                  className={[
+                    "inline-flex items-center gap-2 rounded-full border px-2.5 py-2 transition",
+                    isSelected
+                      ? "border-felicio-pink/45 bg-felicio-pink/10 shadow-soft"
+                      : "border-black/8 bg-white/78 hover:bg-white",
+                  ].join(" ")}
+                >
+                  <Image
+                    src={option.imageUrl}
+                    alt={option.name}
+                    width={36}
+                    height={36}
+                    className="h-9 w-9 rounded-full border border-black/8 bg-white object-cover"
+                    unoptimized
+                  />
+                  <span className="pr-1 text-sm font-semibold text-felicio-ink/76">
+                    {option.name}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {outOfStock && (
         <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-red-200 bg-red-50 px-3 py-1 text-xs font-semibold text-red-600">

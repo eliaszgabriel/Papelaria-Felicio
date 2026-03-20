@@ -4,6 +4,12 @@ import { isAdminSession } from "@/lib/adminAuth";
 import { normalizeCategoryIds, normalizeTextValue } from "@/lib/catalog";
 import { validateCsrfRequest } from "@/lib/csrf";
 import { getPostgresPool, hasPostgresConfig } from "@/lib/postgres";
+import {
+  mergeProductImagesWithColorOptions,
+  parseProductColorOptionsJson,
+  serializeProductColorOptions,
+  type ProductColorOption,
+} from "@/lib/productColorOptions";
 
 export const runtime = "nodejs";
 
@@ -39,6 +45,7 @@ type ProductUpdateBody = {
   stock?: number | string;
   sku?: string | null;
   images?: ProductUpdateBodyImage[];
+  colorOptions?: ProductColorOption[];
 };
 
 function slugify(input: string) {
@@ -167,6 +174,13 @@ export async function PATCH(
   let slug = String(body?.slug || "").trim();
   const categoryIds = normalizeCategoryIds(body?.categoryIds);
   const primaryCategoryId = categoryIds[0] ?? body?.categoryId ?? null;
+  const colorOptionsJson = serializeProductColorOptions(body?.colorOptions);
+  const normalizedColorOptions = parseProductColorOptionsJson(colorOptionsJson);
+  const mergedImages = mergeProductImagesWithColorOptions(
+    Array.isArray(body?.images) ? body.images : [],
+    normalizedColorOptions,
+    name,
+  );
 
   if (!name) {
     return NextResponse.json(
@@ -188,15 +202,16 @@ export async function PATCH(
     await pool.query(
       `
       UPDATE products
-      SET slug=$1, name=$2, shortdescription=$3, description=$4, price=$5, compareatprice=$6, stock=$7, sku=$8, active=$9,
-          categoryid=$10, subcategoryid=$11, color=$12, inmovingshowcase=$13, featured=$14, deal=$15, iscollection=$16, isweeklyfavorite=$17,
-          externalsource=$18, externalsku=$19, syncstock=$20, syncprice=$21, lastsyncedat=$22, updatedat=$23
-      WHERE id=$24
+      SET slug=$1, name=$2, shortdescription=$3, coloroptionsjson=$4, description=$5, price=$6, compareatprice=$7, stock=$8, sku=$9, active=$10,
+          categoryid=$11, subcategoryid=$12, color=$13, inmovingshowcase=$14, featured=$15, deal=$16, iscollection=$17, isweeklyfavorite=$18,
+          externalsource=$19, externalsku=$20, syncstock=$21, syncprice=$22, lastsyncedat=$23, updatedat=$24
+      WHERE id=$25
       `,
       [
         slug,
         name,
         body?.shortDescription ?? null,
+        colorOptionsJson,
         body?.description ?? null,
         Number(body?.price || 0),
         body?.compareAtPrice ?? null,
@@ -225,7 +240,7 @@ export async function PATCH(
     db.prepare(
       `
       UPDATE products
-      SET slug=?, name=?, shortDescription=?, description=?, price=?, compareAtPrice=?, stock=?, sku=?, active=?,
+      SET slug=?, name=?, shortDescription=?, colorOptionsJson=?, description=?, price=?, compareAtPrice=?, stock=?, sku=?, active=?,
           categoryId=?, subCategoryId=?, color=?, inMovingShowcase=?, featured=?, deal=?, isCollection=?, isWeeklyFavorite=?,
           externalSource=?, externalSku=?, syncStock=?, syncPrice=?, lastSyncedAt=?, updatedAt=?
       WHERE id=?
@@ -234,6 +249,7 @@ export async function PATCH(
       slug,
       name,
       body?.shortDescription ?? null,
+      colorOptionsJson,
       body?.description ?? null,
       Number(body?.price || 0),
       body?.compareAtPrice ?? null,
@@ -258,7 +274,7 @@ export async function PATCH(
     );
   }
 
-  const imgs = Array.isArray(body?.images) ? body.images : [];
+  const imgs = mergedImages;
   if (hasPostgresConfig()) {
     const pool = getPostgresPool();
     const client = await pool.connect();

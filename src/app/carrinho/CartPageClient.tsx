@@ -210,6 +210,11 @@ export default function CartPageClient() {
                                 <div className="mt-1 text-sm font-semibold text-felicio-ink/80">
                                   {formatBRL(it.price)}
                                 </div>
+                                {it.colorName && (
+                                  <div className="mt-1 text-xs font-semibold text-felicio-ink/60">
+                                    Cor: {it.colorName}
+                                  </div>
+                                )}
                                 {typeof it.stock !== "undefined" && (
                                   <div className="mt-2 text-xs font-semibold text-felicio-ink/55">
                                     {outOfStock

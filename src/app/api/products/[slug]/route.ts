@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getPostgresPool, hasPostgresConfig } from "@/lib/postgres";
+import { parseProductColorOptionsJson } from "@/lib/productColorOptions";
 
 export const runtime = "nodejs";
 
@@ -8,6 +9,7 @@ type ProductRow = {
   slug: string;
   name: string;
   shortDescription: string | null;
+  colorOptionsJson?: string | null;
   description: string | null;
   price: number;
   compareAtPrice: number | null;
@@ -41,6 +43,7 @@ export async function GET(
          slug,
          name,
          shortdescription AS "shortDescription",
+         coloroptionsjson AS "colorOptionsJson",
          description,
          price,
          compareatprice AS "compareAtPrice",
@@ -75,7 +78,11 @@ export async function GET(
 
     return NextResponse.json({
       ok: true,
-      product: { ...product, images: imagesResult.rows },
+      product: {
+        ...product,
+        images: imagesResult.rows,
+        colorOptions: parseProductColorOptionsJson(product.colorOptionsJson),
+      },
     });
   }
 
@@ -97,5 +104,12 @@ export async function GET(
     )
     .all(product.id) as ProductImageRow[];
 
-  return NextResponse.json({ ok: true, product: { ...product, images } });
+  return NextResponse.json({
+    ok: true,
+    product: {
+      ...product,
+      images,
+      colorOptions: parseProductColorOptionsJson(product.colorOptionsJson),
+    },
+  });
 }

@@ -441,6 +441,11 @@ function MobileHeader({
                           <div className="mt-1 text-sm font-semibold text-felicio-ink/75">
                             {formatBRL(item.price)}
                           </div>
+                          {item.colorName && (
+                            <div className="mt-1 text-xs font-semibold text-felicio-ink/58">
+                              Cor: {item.colorName}
+                            </div>
+                          )}
                         </div>
 
                         <button

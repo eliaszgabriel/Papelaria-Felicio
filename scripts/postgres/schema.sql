@@ -46,6 +46,7 @@ CREATE TABLE IF NOT EXISTS products (
   slug TEXT NOT NULL UNIQUE,
   name TEXT NOT NULL,
   shortDescription TEXT,
+  colorOptionsJson TEXT,
   description TEXT,
   price DOUBLE PRECISION NOT NULL,
   compareAtPrice DOUBLE PRECISION,

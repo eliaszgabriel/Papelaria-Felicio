@@ -6,12 +6,15 @@ export type OrderStatus =
 
 export type OrderItem = {
   id: string;
+  productId?: string;
   slug?: string;
   title: string;
   price: number;       // legado (localStorage)
   unitPrice?: number;  // campo do banco de dados
   qty: number;
   image?: string;
+  colorName?: string;
+  variantKey?: string;
 };
 
 export type OrderStatusEvent = {

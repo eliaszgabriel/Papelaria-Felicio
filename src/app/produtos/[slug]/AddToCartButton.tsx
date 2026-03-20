@@ -24,7 +24,8 @@ export default function AddToCartButton({
       onClick={() => {
         addItem(
           {
-            id: product.id,
+            id: `${product.id}::default`,
+            productId: product.id,
             slug: product.slug,
             title: product.title,
             price: product.price,

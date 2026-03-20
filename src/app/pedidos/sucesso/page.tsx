@@ -30,6 +30,7 @@ type SuccessOrderItem = {
   quantity?: number;
   unitPrice?: number;
   price?: number;
+  colorName?: string;
 };
 
 function formatBRL(value: number) {
@@ -435,9 +436,14 @@ export default async function PedidoSucesso({ searchParams }: Props) {
                           className="flex items-center justify-between gap-4 rounded-[20px] border border-black/5 bg-white p-3.5"
                         >
                           <div className="min-w-0">
-                            <div className="truncate text-sm font-semibold text-felicio-ink">
+                          <div className="truncate text-sm font-semibold text-felicio-ink">
                               {item.title || item.name || `Item ${idx + 1}`}
                             </div>
+                          {item.colorName && (
+                            <div className="mt-1 text-[11px] font-semibold text-felicio-ink/55">
+                              Cor: {item.colorName}
+                            </div>
+                          )}
                           <div className="mt-1 text-xs text-felicio-ink/55">
                             Quantidade: {item.qty || item.quantity || 1}
                           </div>

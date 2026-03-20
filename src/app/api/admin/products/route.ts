@@ -4,6 +4,12 @@ import { isAdminSession } from "@/lib/adminAuth";
 import { normalizeCategoryIds, normalizeTextValue } from "@/lib/catalog";
 import { validateCsrfRequest } from "@/lib/csrf";
 import { getPostgresPool, hasPostgresConfig } from "@/lib/postgres";
+import {
+  mergeProductImagesWithColorOptions,
+  parseProductColorOptionsJson,
+  serializeProductColorOptions,
+  type ProductColorOption,
+} from "@/lib/productColorOptions";
 
 export const runtime = "nodejs";
 
@@ -12,6 +18,7 @@ type ProductRow = {
   slug: string;
   name: string;
   shortDescription: string | null;
+  colorOptionsJson?: string | null;
   description: string | null;
   price: number;
   compareAtPrice: number | null;
@@ -90,6 +97,7 @@ type ProductBody = {
   syncPrice?: number | string | boolean;
   lastSyncedAt?: number | null;
   images?: ProductBodyImage[];
+  colorOptions?: ProductColorOption[];
 };
 
 function slugify(input: string) {
@@ -128,6 +136,7 @@ export async function GET(req: Request) {
            slug,
            name,
            shortdescription AS "shortDescription",
+           coloroptionsjson AS "colorOptionsJson",
            description,
            price,
            compareatprice AS "compareAtPrice",
@@ -212,6 +221,7 @@ export async function GET(req: Request) {
       product: {
         ...product,
         images,
+        colorOptions: parseProductColorOptionsJson(product.colorOptionsJson),
         categoryIds: categoryIds.map((row) => row.categoryId),
       },
     });
@@ -470,6 +480,13 @@ export async function POST(req: Request) {
   const primaryCategoryId = categoryIds[0] ?? body?.categoryId ?? null;
 
   const images = Array.isArray(body?.images) ? body.images : [];
+  const colorOptionsJson = serializeProductColorOptions(body?.colorOptions);
+  const normalizedColorOptions = parseProductColorOptionsJson(colorOptionsJson);
+  const mergedImages = mergeProductImagesWithColorOptions(
+    images,
+    normalizedColorOptions,
+    name,
+  );
 
   if (hasPostgresConfig()) {
     const pool = getPostgresPool();
@@ -478,16 +495,17 @@ export async function POST(req: Request) {
       await client.query("BEGIN");
       await client.query(
         `INSERT INTO products (
-          id, slug, name, shortdescription, description, price, compareatprice, stock, sku, active,
+          id, slug, name, shortdescription, coloroptionsjson, description, price, compareatprice, stock, sku, active,
           categoryid, subcategoryid, color, inmovingshowcase, featured, deal, iscollection, isweeklyfavorite,
           externalsource, externalsku, syncstock, syncprice, lastsyncedat, createdat, updatedat
         )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25)`,
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26)`,
         [
           id,
           slug,
           name,
           body?.shortDescription ?? null,
+          colorOptionsJson,
           body?.description ?? null,
           Number(body?.price || 0),
           body?.compareAtPrice ?? null,
@@ -521,8 +539,8 @@ export async function POST(req: Request) {
         );
       }
 
-      for (let index = 0; index < images.length; index += 1) {
-        const image = images[index];
+      for (let index = 0; index < mergedImages.length; index += 1) {
+        const image = mergedImages[index];
         await client.query(
           `INSERT INTO product_images (id, productid, url, alt, sortorder)
            VALUES ($1, $2, $3, $4, $5)`,
@@ -547,16 +565,17 @@ export async function POST(req: Request) {
     const { db } = await import("@/lib/db");
     db.prepare(
       `INSERT INTO products (
-        id, slug, name, shortDescription, description, price, compareAtPrice, stock, sku, active,
+        id, slug, name, shortDescription, colorOptionsJson, description, price, compareAtPrice, stock, sku, active,
         categoryId, subCategoryId, color, inMovingShowcase, featured, deal, isCollection, isWeeklyFavorite,
         externalSource, externalSku, syncStock, syncPrice, lastSyncedAt, createdAt, updatedAt
       )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)` ,
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)` ,
     ).run(
       id,
       slug,
       name,
       body?.shortDescription ?? null,
+      colorOptionsJson,
       body?.description ?? null,
       Number(body?.price || 0),
       body?.compareAtPrice ?? null,
@@ -583,7 +602,7 @@ export async function POST(req: Request) {
     const insertCategoryLink = db.prepare(
       "INSERT OR IGNORE INTO product_category_links (productId, categoryId, createdAt) VALUES (?, ?, ?)",
     );
-    if (images.length) {
+    if (mergedImages.length) {
       const insertImage = db.prepare(
         "INSERT INTO product_images (id, productId, url, alt, sortOrder) VALUES (?, ?, ?, ?, ?)",
       );
@@ -593,8 +612,8 @@ export async function POST(req: Request) {
           insertCategoryLink.run(id, categoryId, now);
         }
 
-        for (let index = 0; index < images.length; index += 1) {
-          const image = images[index];
+        for (let index = 0; index < mergedImages.length; index += 1) {
+          const image = mergedImages[index];
           insertImage.run(
             crypto.randomUUID(),
             id,

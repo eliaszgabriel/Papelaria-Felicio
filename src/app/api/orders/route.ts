@@ -96,6 +96,9 @@ type CustomerPayload = {
 type IncomingOrderItem = {
   productId?: string;
   qty?: number;
+  colorName?: string;
+  colorImage?: string;
+  variantKey?: string;
 };
 
 async function getSessionEmailFromCookies() {
@@ -430,6 +433,9 @@ export async function POST(req: Request) {
   const incoming = (body.items as IncomingOrderItem[]).map((item) => ({
     productId: String(item.productId ?? ""),
     qty: Math.max(1, Math.floor(Number(item.qty ?? 1))),
+    colorName: String(item.colorName || "").trim(),
+    colorImage: String(item.colorImage || "").trim(),
+    variantKey: String(item.variantKey || "").trim(),
   }));
 
   if (incoming.some((item) => !item.productId)) {
@@ -446,6 +452,8 @@ export async function POST(req: Request) {
     unitPrice: number;
     qty: number;
     image: string | null;
+    colorName?: string;
+    variantKey?: string;
   }> = [];
 
   let subtotalForDb = 0;
@@ -553,7 +561,9 @@ export async function POST(req: Request) {
       title: String(row.name),
       unitPrice,
       qty: item.qty,
-      image: row.cover ? String(row.cover) : null,
+      image: item.colorImage || (row.cover ? String(row.cover) : null),
+      colorName: item.colorName || undefined,
+      variantKey: item.variantKey || undefined,
     });
   }
 

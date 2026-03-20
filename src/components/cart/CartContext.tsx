@@ -5,11 +5,15 @@ import { emitCartAdd } from "@/lib/cartEvents";
 
 export type CartItem = {
   id: string;
+  productId: string;
   slug: string;
   title: string;
   price: number;
   image?: string;
   stock?: number;
+  variantKey?: string;
+  colorName?: string;
+  colorImage?: string;
   qty: number;
 };
 
@@ -35,7 +39,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     const timer = window.setTimeout(() => {
       try {
         const raw = localStorage.getItem(STORAGE_KEY);
-        setItems(raw ? (JSON.parse(raw) as CartItem[]) : []);
+        const parsed = raw ? (JSON.parse(raw) as CartItem[]) : [];
+        setItems(
+          parsed.map((item) => ({
+            ...item,
+            productId: String(item.productId || item.id || ""),
+          })),
+        );
       } catch {
         setItems([]);
       } finally {
@@ -59,7 +69,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const addItem: CartContextType["addItem"] = (item, qty = 1) => {
     setItems((prev) => {
-      const found = prev.find((p) => p.id === item.id && p.slug === item.slug);
+      const productId = String((item as CartItem).productId || item.id || "");
+      const variantKey = String((item as CartItem).variantKey || "default");
+      const lineId = `${productId}::${variantKey}`;
+      const found = prev.find((p) => p.id === lineId);
       const nextStock = Number(item.stock ?? found?.stock ?? 0);
 
       if (!found) {
@@ -67,14 +80,28 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           Number.isFinite(nextStock) && nextStock > 0
             ? Math.min(Math.max(1, qty), nextStock)
             : Math.max(1, qty);
-        return [...prev, { ...item, qty: safeQty }];
+        return [
+          ...prev,
+          {
+            ...item,
+            id: lineId,
+            productId,
+            variantKey,
+            image: item.colorImage || item.image,
+            qty: safeQty,
+          },
+        ];
       }
 
       return prev.map((p) =>
-        p.id === item.id && p.slug === item.slug
+        p.id === lineId
           ? {
               ...p,
               ...item,
+              id: lineId,
+              productId,
+              variantKey,
+              image: item.colorImage || item.image || p.image,
               qty:
                 Number.isFinite(nextStock) && nextStock > 0
                   ? Math.min(p.qty + qty, nextStock)

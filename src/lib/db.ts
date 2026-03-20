@@ -37,6 +37,7 @@ db.exec(`
     slug TEXT NOT NULL UNIQUE,
     name TEXT NOT NULL,
     shortDescription TEXT,
+    colorOptionsJson TEXT,
     description TEXT,
     price REAL NOT NULL,
     compareAtPrice REAL,
@@ -97,6 +98,10 @@ try {
 
 try {
   db.exec(`ALTER TABLE products ADD COLUMN shortDescription TEXT`);
+} catch {}
+
+try {
+  db.exec(`ALTER TABLE products ADD COLUMN colorOptionsJson TEXT`);
 } catch {}
 
 try {

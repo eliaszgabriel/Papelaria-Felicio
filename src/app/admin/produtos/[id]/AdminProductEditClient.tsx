@@ -5,6 +5,11 @@ import Link from "next/link";
 import Container from "@/components/layout/Container";
 import { COLOR_OPTIONS, SUBCATEGORY_OPTIONS } from "@/lib/catalog";
 import { suggestProductEnrichment } from "@/lib/productEnrichment";
+import {
+  createColorOptionId,
+  normalizeProductColorOptions,
+  type ProductColorOption,
+} from "@/lib/productColorOptions";
 import AppToast, { type AppToastState } from "@/components/ui/AppToast";
 
 type Mode = "create" | "edit";
@@ -24,6 +29,7 @@ type Product = {
   categoryIds?: string[];
   subCategoryId?: string | null;
   color?: string | null;
+  colorOptions?: ProductColorOption[];
   inMovingShowcase?: 0 | 1;
   featured: 0 | 1;
   deal: 0 | 1;
@@ -64,6 +70,9 @@ export default function AdminProductEditClient({ mode, id }: { mode: Mode; id?: 
   const [categoryIds, setCategoryIds] = useState<string[]>([]);
   const [subCategoryId, setSubCategoryId] = useState("");
   const [color, setColor] = useState("");
+  const [colorOptions, setColorOptions] = useState<ProductColorOption[]>([]);
+  const [customColorName, setCustomColorName] = useState("");
+  const [customColorImageUrl, setCustomColorImageUrl] = useState("");
   const [inMovingShowcase, setInMovingShowcase] = useState(false);
   const [featured, setFeatured] = useState(false);
   const [deal, setDeal] = useState(false);
@@ -121,6 +130,7 @@ export default function AdminProductEditClient({ mode, id }: { mode: Mode; id?: 
         setCategoryIds(Array.isArray(product.categoryIds) && product.categoryIds.length ? product.categoryIds : product.categoryId ? [product.categoryId] : []);
         setSubCategoryId(product.subCategoryId ?? "");
         setColor(product.color ?? "");
+        setColorOptions(normalizeProductColorOptions(product.colorOptions));
         setInMovingShowcase(Number(product.inMovingShowcase ?? 0) === 1);
         setFeatured(Number(product.featured ?? 0) === 1);
         setDeal(Number(product.deal ?? 0) === 1);
@@ -131,7 +141,15 @@ export default function AdminProductEditClient({ mode, id }: { mode: Mode; id?: 
         setSyncStock(Number(product.syncStock ?? 0) === 1);
         setSyncPrice(Number(product.syncPrice ?? 0) === 1);
         setLastSyncedAt(product.lastSyncedAt ?? null);
-        setImageUrls((product.images || []).sort((a, b) => a.sortOrder - b.sortOrder).map((img) => img.url).filter(Boolean).join("\n"));
+        const productColorOptions = normalizeProductColorOptions(product.colorOptions);
+        const colorImageUrls = new Set(productColorOptions.map((option) => option.imageUrl));
+        setImageUrls(
+          (product.images || [])
+            .sort((a, b) => a.sortOrder - b.sortOrder)
+            .map((img) => img.url)
+            .filter((url) => url && !colorImageUrls.has(url))
+            .join("\n"),
+        );
         setLoading(false);
       } catch {
         setError("Erro de rede ao carregar produto.");
@@ -155,6 +173,66 @@ export default function AdminProductEditClient({ mode, id }: { mode: Mode; id?: 
       if (!nextPrimary) setSubCategoryId("");
       return next;
     });
+  }
+
+  function togglePresetColor(optionName: string) {
+    setColorOptions((current) => {
+      const existing = current.find(
+        (option) => option.name.toLowerCase() === optionName.toLowerCase(),
+      );
+
+      if (existing) {
+        return current.filter((option) => option.id !== existing.id);
+      }
+
+      return [
+        ...current,
+        {
+          id: createColorOptionId(optionName),
+          name: optionName,
+          imageUrl: "",
+          source: "preset",
+        },
+      ];
+    });
+  }
+
+  function updateColorOption(
+    optionId: string,
+    patch: Partial<ProductColorOption>,
+  ) {
+    setColorOptions((current) =>
+      current.map((option) =>
+        option.id === optionId
+          ? {
+              ...option,
+              ...patch,
+            }
+          : option,
+      ),
+    );
+  }
+
+  function removeColorOption(optionId: string) {
+    setColorOptions((current) => current.filter((option) => option.id !== optionId));
+  }
+
+  function addCustomColorOption() {
+    const name = customColorName.trim();
+    const imageUrl = customColorImageUrl.trim();
+    if (!name || !imageUrl) return;
+
+    setColorOptions((current) => [
+      ...current,
+      {
+        id: createColorOptionId(name),
+        name,
+        imageUrl,
+        source: "custom",
+      },
+    ]);
+    setCustomColorName("");
+    setCustomColorImageUrl("");
   }
 
   function applySmartSuggestion() {
@@ -210,6 +288,7 @@ export default function AdminProductEditClient({ mode, id }: { mode: Mode; id?: 
       categoryIds,
       subCategoryId: subCategoryId || null,
       color: color || null,
+      colorOptions: normalizeProductColorOptions(colorOptions),
       inMovingShowcase: inMovingShowcase ? 1 : 0,
       featured: featured ? 1 : 0,
       deal: deal ? 1 : 0,
@@ -388,6 +467,94 @@ export default function AdminProductEditClient({ mode, id }: { mode: Mode; id?: 
                       <label className="text-xs font-semibold text-felicio-ink/60">Cor</label>
                       <input list="product-colors" value={color} onChange={(e) => setColor(e.target.value)} placeholder="Ex.: Rosa, Azul, Colorido" className="mt-1 w-full rounded-2xl border border-black/5 bg-white px-4 py-3 text-sm text-felicio-ink/80 outline-none" />
                       <datalist id="product-colors">{COLOR_OPTIONS.map((option) => <option key={option} value={option} />)}</datalist>
+                    </div>
+                  </div>
+
+                  <div className="rounded-2xl border border-black/5 bg-white/70 p-4">
+                    <div className="text-sm font-bold text-felicio-ink/72">Cores com foto</div>
+                    <div className="mt-1 text-xs text-felicio-ink/55">
+                      Selecione as cores que esse produto possui e cole a imagem de cada uma. Essas fotos entram na galeria e na escolha da compra.
+                    </div>
+
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      {COLOR_OPTIONS.map((option) => {
+                        const selected = colorOptions.some(
+                          (entry) => entry.name.toLowerCase() === option.toLowerCase(),
+                        );
+
+                        return (
+                          <button
+                            key={option}
+                            type="button"
+                            onClick={() => togglePresetColor(option)}
+                            className={[
+                              "rounded-full px-3 py-2 text-xs font-bold transition",
+                              selected
+                                ? "bg-felicio-pink text-white"
+                                : "border border-black/8 bg-white text-felicio-ink/72 hover:bg-white/90",
+                            ].join(" ")}
+                          >
+                            {option}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {colorOptions.length > 0 && (
+                      <div className="mt-4 grid gap-3">
+                        {colorOptions.map((option) => (
+                          <div key={option.id} className="rounded-2xl border border-black/6 bg-white p-3.5">
+                            <div className="flex items-center justify-between gap-3">
+                              <div className="text-sm font-semibold text-felicio-ink/78">
+                                {option.name}
+                                {option.source === "custom" ? " (personalizada)" : ""}
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => removeColorOption(option.id)}
+                                className="text-xs font-semibold text-felicio-ink/58 underline underline-offset-4"
+                              >
+                                Remover
+                              </button>
+                            </div>
+                            <input
+                              value={option.imageUrl}
+                              onChange={(e) =>
+                                updateColorOption(option.id, { imageUrl: e.target.value })
+                              }
+                              placeholder="Cole o link da foto que representa essa cor"
+                              className="mt-3 w-full rounded-2xl border border-black/5 bg-white px-4 py-3 text-sm text-felicio-ink/80 outline-none"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    <div className="mt-4 rounded-2xl border border-dashed border-black/8 bg-white/75 p-3.5">
+                      <div className="text-xs font-extrabold uppercase tracking-[0.16em] text-felicio-ink/45">
+                        Adicionar cor personalizada
+                      </div>
+                      <div className="mt-3 grid gap-3 lg:grid-cols-[180px_minmax(0,1fr)_auto]">
+                        <input
+                          value={customColorName}
+                          onChange={(e) => setCustomColorName(e.target.value)}
+                          placeholder="Nome da cor"
+                          className="rounded-2xl border border-black/5 bg-white px-4 py-3 text-sm text-felicio-ink/80 outline-none"
+                        />
+                        <input
+                          value={customColorImageUrl}
+                          onChange={(e) => setCustomColorImageUrl(e.target.value)}
+                          placeholder="Link da foto da cor"
+                          className="rounded-2xl border border-black/5 bg-white px-4 py-3 text-sm text-felicio-ink/80 outline-none"
+                        />
+                        <button
+                          type="button"
+                          onClick={addCustomColorOption}
+                          className="rounded-full bg-white px-4 py-3 text-sm font-semibold text-felicio-ink shadow-soft transition hover:bg-felicio-pink/10"
+                        >
+                          Adicionar
+                        </button>
+                      </div>
                     </div>
                   </div>
 

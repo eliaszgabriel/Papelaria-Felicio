@@ -1,9 +1,13 @@
 export type CartItem = {
   id: string;
+  productId?: string;
   slug: string;
   title: string;
   price: number;
   image?: string;
+  variantKey?: string;
+  colorName?: string;
+  colorImage?: string;
   qty: number;
 };
 

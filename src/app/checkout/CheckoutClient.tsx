@@ -310,9 +310,12 @@ export default function CheckoutClient() {
         uf: uf.trim() || undefined,
       },
       items: items.map((item) => ({
-        productId: String(item.id),
+        productId: String(item.productId || item.id),
         qty: item.qty,
         price: item.price,
+        colorName: item.colorName,
+        colorImage: item.colorImage || item.image,
+        variantKey: item.variantKey,
       })),
       shipping: shippingPrice,
       status: "aguardando_pagamento" as const,
