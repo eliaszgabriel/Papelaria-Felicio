@@ -42,6 +42,9 @@ const RULES: Rule[] = [
   { categoryId: "tesouras-reguas", subCategoryId: "Tesoura", keywords: ["tesoura", "tesoura escolar", "tesoura infantil"] },
   { categoryId: "tesouras-reguas", subCategoryId: "Regua", keywords: ["regua", "regua 15cm", "regua 30cm"] },
   { categoryId: "tesouras-reguas", subCategoryId: "Kit geometrico", keywords: ["transferidor", "esquadro", "compasso", "geometria"] },
+  { categoryId: "escritorio", subCategoryId: "Mesa", keywords: ["grampeador", "porta caneta", "porta-lapis", "porta lapis", "organizador de mesa"] },
+  { categoryId: "escritorio", subCategoryId: "Arquivo", keywords: ["pasta", "arquivo", "fichario de mesa", "caixa arquivo"] },
+  { categoryId: "escritorio", subCategoryId: "Organizacao", keywords: ["organizador", "prancheta", "bloco adesivo", "post-it", "planner de mesa"] },
   { categoryId: "mochilas", subCategoryId: "Escolar", keywords: ["mochila"] },
   { categoryId: "mochilas", subCategoryId: "Mini mochila", keywords: ["mini mochila"] },
   { categoryId: "presentes", subCategoryId: "Kits", keywords: ["kit presente", "presente", "gift"] },
@@ -80,6 +83,10 @@ const CATEGORY_COPY: Record<string, { lead: string; support: string }> = {
   "tesouras-reguas": {
     lead: "Uma opcao pratica para recorte, medicao e atividades escolares.",
     support: "Ajuda a montar uma papelaria funcional para o uso do dia a dia.",
+  },
+  escritorio: {
+    lead: "Uma escolha pratica para organizar a mesa e deixar a rotina mais funcional.",
+    support: "Combina com estudos, trabalho e detalhes que deixam o escritorio mais bonito.",
   },
   presentes: {
     lead: "Uma escolha carinhosa para presentear ou montar kits especiais.",

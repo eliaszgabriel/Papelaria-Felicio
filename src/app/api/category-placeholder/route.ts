@@ -11,6 +11,7 @@ const THEME: Record<string, { primary: string; secondary: string; accent: string
   "agendas-planners": { primary: "#f0e9ff", secondary: "#fff6e4", accent: "#67597b" },
   canetas: { primary: "#ffe6f3", secondary: "#ebfcff", accent: "#815a68" },
   "tesouras-reguas": { primary: "#e8fff4", secondary: "#fff8de", accent: "#5b7768" },
+  escritorio: { primary: "#eef6ff", secondary: "#fff8e8", accent: "#5d6e82" },
   presentes: { primary: "#fff0dc", secondary: "#ffe9f6", accent: "#7c5f4c" },
 };
 

@@ -55,6 +55,12 @@ const CATEGORY_THEME: Record<
     accent: "#5b7466",
     label: "Tesouras e Reguas",
   },
+  escritorio: {
+    primary: "#edf6ff",
+    secondary: "#fff6e2",
+    accent: "#5a6f81",
+    label: "Escritorio",
+  },
   presentes: {
     primary: "#fff0d9",
     secondary: "#ffe7f6",
