@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 export default function ProductGallery({
   images,
@@ -18,6 +18,23 @@ export default function ProductGallery({
   const [active, setActive] = useState(0);
   const [zoom, setZoom] = useState(false);
   const activeIndex = Math.min(active, safeImages.length - 1);
+
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+
+    if (zoom) {
+      document.body.dataset.productZoomOpen = "1";
+      window.dispatchEvent(new Event("pf:productzoomchange"));
+      return () => {
+        delete document.body.dataset.productZoomOpen;
+        window.dispatchEvent(new Event("pf:productzoomchange"));
+      };
+    }
+
+    delete document.body.dataset.productZoomOpen;
+    window.dispatchEvent(new Event("pf:productzoomchange"));
+    return undefined;
+  }, [zoom]);
 
   return (
     <>

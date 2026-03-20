@@ -111,6 +111,21 @@ function getLocationSearchSnapshot() {
   return window.location.search || "";
 }
 
+function subscribeToProductZoom(onStoreChange: () => void) {
+  if (typeof window === "undefined") return () => {};
+
+  const notify = () => onStoreChange();
+  window.addEventListener("pf:productzoomchange", notify);
+  return () => {
+    window.removeEventListener("pf:productzoomchange", notify);
+  };
+}
+
+function getProductZoomSnapshot() {
+  if (typeof document === "undefined") return false;
+  return document.body.dataset.productZoomOpen === "1";
+}
+
 type SharedHeaderProps = {
   pathname: string;
   searchParams: URLSearchParams;
@@ -693,6 +708,11 @@ export default function Header() {
     getLocationSearchSnapshot,
     () => "",
   );
+  const productZoomOpen = useSyncExternalStore(
+    subscribeToProductZoom,
+    getProductZoomSnapshot,
+    () => false,
+  );
   const searchParams = useMemo(
     () => new URLSearchParams(locationSearch),
     [locationSearch],
@@ -853,7 +873,12 @@ export default function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-50 border-b border-white/10 bg-transparent backdrop-blur-md">
+    <header
+      className={[
+        "sticky top-0 z-50 border-b border-white/10 bg-transparent backdrop-blur-md transition-opacity duration-200",
+        productZoomOpen ? "pointer-events-none opacity-0" : "",
+      ].join(" ")}
+    >
       <div className="absolute inset-0 -z-10 bg-white/10" />
 
       <Container>

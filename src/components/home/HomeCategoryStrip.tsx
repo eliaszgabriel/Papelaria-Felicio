@@ -1,23 +1,15 @@
 import Link from "next/link";
 import Image from "next/image";
 import { getInternalJsonFetchOptions, getInternalSiteUrl } from "@/lib/siteUrl";
+import { getCategoryShowcaseImage } from "@/lib/categoryShowcase";
 
 type Category = {
   id: string | number;
   name: string;
 };
 
-type ProductListItem = {
-  coverImage?: string | null;
-  images?: Array<{ url?: string | null }> | null;
-};
-
 type CategoriesResponse = {
   items: Category[];
-};
-
-type ProductsResponse = {
-  items: ProductListItem[];
 };
 
 async function getCategories() {
@@ -29,28 +21,6 @@ async function getCategories() {
     return { items: [] } satisfies CategoriesResponse;
   }
   return (await res.json()) as CategoriesResponse;
-}
-
-async function getCoverForCategory(categoryId: string) {
-  const base = getInternalSiteUrl();
-  const res = await fetch(
-    `${base}/api/products?category=${encodeURIComponent(categoryId)}&limit=1`,
-    getInternalJsonFetchOptions(),
-  );
-
-  if (!res.ok) return null;
-  const contentType = res.headers.get("content-type") || "";
-  if (!contentType.includes("application/json")) return null;
-
-  const data = (await res.json()) as ProductsResponse;
-  const first = Array.isArray(data.items) ? data.items[0] : null;
-  if (!first) return null;
-
-  return (
-    first.coverImage ||
-    (Array.isArray(first.images) ? first.images[0]?.url : "") ||
-    null
-  );
 }
 
 export default async function HomeCategoryStrip() {
@@ -65,7 +35,7 @@ export default async function HomeCategoryStrip() {
   const categoriesWithImage = await Promise.all(
     categories.map(async (category) => ({
       ...category,
-      image: await getCoverForCategory(String(category.id)),
+      image: getCategoryShowcaseImage(String(category.id)),
     })),
   );
 
@@ -101,7 +71,7 @@ export default async function HomeCategoryStrip() {
                       alt={category.name}
                       width={160}
                       height={160}
-                      className="h-full w-full object-cover transition duration-500 group-hover:scale-110"
+                      className="h-full w-full bg-white/45 object-contain p-3 transition duration-300 group-hover:scale-[1.03]"
                       unoptimized
                     />
                   ) : (
