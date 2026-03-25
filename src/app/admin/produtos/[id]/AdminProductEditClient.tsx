@@ -65,7 +65,7 @@ export default function AdminProductEditClient({ mode, id }: { mode: Mode; id?: 
   const [compareAtPrice, setCompareAtPrice] = useState("");
   const [stock, setStock] = useState("10");
   const [sku, setSku] = useState("");
-  const [active, setActive] = useState<0 | 1>(1);
+  const [active, setActive] = useState<0 | 1>(0);
   const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
   const [categoryIds, setCategoryIds] = useState<string[]>([]);
   const [subCategoryId, setSubCategoryId] = useState("");
@@ -620,8 +620,8 @@ export default function AdminProductEditClient({ mode, id }: { mode: Mode; id?: 
                     <div>
                       <label className="text-xs font-semibold text-felicio-ink/60">Status</label>
                       <select value={active} onChange={(e) => setActive((Number(e.target.value) === 1 ? 1 : 0) as 0 | 1)} className="mt-1 w-full rounded-2xl border border-black/5 bg-white px-4 py-3 text-sm text-felicio-ink/80 outline-none">
-                        <option value={1}>Ativo</option>
-                        <option value={0}>Inativo</option>
+                        <option value={0}>Oculto da loja</option>
+                        <option value={1}>Visivel na loja</option>
                       </select>
                     </div>
                     <div className="rounded-2xl border border-black/5 bg-white/70 p-4 text-xs text-felicio-ink/60"><b>Como funciona:</b> voce pode colar URLs no campo abaixo ou enviar arquivos. A primeira URL vira a capa e os uploads novos entram primeiro.</div>
@@ -672,7 +672,7 @@ export default function AdminProductEditClient({ mode, id }: { mode: Mode; id?: 
                       <div><b>Nome:</b> {name || "Sem nome"}</div>
                       <div><b>Slug:</b> {slug || slugify(name) || "-"}</div>
                       <div><b>Resumo curto:</b> {shortDescription.trim() ? "Configurado" : "Usando fallback"}</div>
-                      <div><b>Status:</b> {active ? "Ativo" : "Inativo"}</div>
+                      <div><b>Status:</b> {active ? "Visivel na loja" : "Oculto da loja"}</div>
                       <div><b>Imagens:</b> {parsedUrls.length}</div>
                       <div><b>Origem:</b> {isOlistProduct ? "Olist ERP" : "Site"}</div>
                       {isOlistProduct && (

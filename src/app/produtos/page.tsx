@@ -2,7 +2,11 @@ import Link from "next/link";
 import Container from "@/components/layout/Container";
 import ProductCard from "@/components/product/ProductCard";
 import { COLOR_OPTIONS, SUBCATEGORY_OPTIONS } from "@/lib/catalog";
-import { getInternalJsonFetchOptions, getInternalSiteUrl } from "@/lib/siteUrl";
+import {
+  getStorefrontCategories,
+  getStorefrontCategoryCounts,
+  getStorefrontProducts,
+} from "@/lib/storefront";
 
 export const dynamic = "force-dynamic";
 
@@ -25,41 +29,6 @@ type ProductListItem = {
   subCategoryId?: string | null;
   color?: string | null;
 };
-
-type CategoriesResponse = {
-  items: Category[];
-};
-
-type ProductsResponse = {
-  items: ProductListItem[];
-  total: number;
-};
-
-async function getCategories() {
-  const base = getInternalSiteUrl();
-  const res = await fetch(`${base}/api/categories`, getInternalJsonFetchOptions());
-  if (!res.ok) return { items: [] } satisfies CategoriesResponse;
-  const contentType = res.headers.get("content-type") || "";
-  if (!contentType.includes("application/json")) {
-    return { items: [] } satisfies CategoriesResponse;
-  }
-  return (await res.json()) as CategoriesResponse;
-}
-
-async function getProducts(query?: string) {
-  const base = getInternalSiteUrl();
-  const qs = query ? `?${query}` : "";
-  const res = await fetch(
-    `${base}/api/products${qs}`,
-    getInternalJsonFetchOptions(),
-  );
-  if (!res.ok) return { items: [], total: 0 } satisfies ProductsResponse;
-  const contentType = res.headers.get("content-type") || "";
-  if (!contentType.includes("application/json")) {
-    return { items: [], total: 0 } satisfies ProductsResponse;
-  }
-  return (await res.json()) as ProductsResponse;
-}
 
 function buildQuery(params: Record<string, string>) {
   const searchParams = new URLSearchParams();
@@ -465,68 +434,51 @@ export default async function ProdutosPage({
   const pageSize = 8;
   const offset = (page - 1) * pageSize;
 
-  const cats = await getCategories();
-  const categories = Array.isArray(cats?.items) ? cats.items : [];
-
-  const categoryCountEntries = await Promise.all(
-    categories.map(async (item) => {
-      const response = await getProducts(
-        buildQuery({
-          category: String(item.id),
-          q,
-          deal,
-          limit: "1",
-          offset: "0",
-        }),
-      );
-      return [String(item.id), Number(response.total ?? 0)] as const;
-    }),
-  );
-
-  const [prod, filterUniverse, allProductsResponse] = await Promise.all([
-    getProducts(
-      buildQuery({
+  const [categories, categoryCounts, prod, filterUniverse, allProductsResponse] =
+    await Promise.all([
+      getStorefrontCategories(),
+      getStorefrontCategoryCounts({ q, deal }),
+      getStorefrontProducts({
         category,
         q,
         sort,
         deal,
         subCategory,
         color,
-        limit: String(pageSize),
-        offset: String(offset),
+        limit: pageSize,
+        offset,
       }),
-    ),
-    getProducts(
-      buildQuery({
+      getStorefrontProducts({
         category,
         q,
         sort,
         deal,
-        limit: "200",
-        offset: "0",
+        limit: 200,
+        offset: 0,
       }),
-    ),
-    getProducts(
-      buildQuery({
+      getStorefrontProducts({
         q,
         sort,
-        limit: "1",
-        offset: "0",
+        limit: 1,
+        offset: 0,
       }),
-    ),
-  ]);
+    ]);
 
   const items = Array.isArray(prod?.items) ? prod.items : [];
   const filterItems = Array.isArray(filterUniverse?.items) ? filterUniverse.items : [];
   const total = Number(prod?.total ?? 0);
   const allProductsCount = Number(allProductsResponse?.total ?? total);
+  const normalizedCategories: Category[] = Array.isArray(categories)
+    ? categories
+    : [];
 
   const totalPages = Math.max(Math.ceil(total / pageSize), 1);
   const canPrev = page > 1;
   const canNext = page < totalPages;
   const baseQuery = { category, q, sort, deal, subCategory, color };
-  const activeCategory = categories.find((item) => String(item.id) === category);
-  const categoryCounts = new Map<string, number>(categoryCountEntries);
+  const activeCategory = normalizedCategories.find(
+    (item) => String(item.id) === category,
+  );
   const subCategoryOptions = category ? SUBCATEGORY_OPTIONS[category] ?? [] : [];
   const subCategoryCounts = countByValue(filterItems, (item) => item.subCategoryId ?? "");
   const colorCounts = countByValue(filterItems, (item) => item.color ?? "");
@@ -552,7 +504,7 @@ export default async function ProdutosPage({
                   baseQuery={baseQuery}
                   category={category}
                   categoryCounts={categoryCounts}
-                  categories={categories}
+                  categories={normalizedCategories}
                   color={color}
                   colorCounts={colorCounts}
                   deal={deal}
@@ -576,7 +528,7 @@ export default async function ProdutosPage({
               baseQuery={baseQuery}
               category={category}
               categoryCounts={categoryCounts}
-              categories={categories}
+              categories={normalizedCategories}
               color={color}
               colorCounts={colorCounts}
               deal={deal}

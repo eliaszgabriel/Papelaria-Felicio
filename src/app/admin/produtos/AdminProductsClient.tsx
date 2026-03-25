@@ -146,6 +146,7 @@ export default function AdminProductsClient() {
   });
   const [categoryOptions, setCategoryOptions] = useState<CategoryOption[]>([]);
   const [bulkCategoryId, setBulkCategoryId] = useState("");
+  const [bulkEnriching, setBulkEnriching] = useState(false);
   const [toggling, setToggling] = useState<Record<string, boolean>>({});
   const [importingOlist, setImportingOlist] = useState(false);
   const [syncingOlist, setSyncingOlist] = useState(false);
@@ -602,6 +603,71 @@ export default function AdminProductsClient() {
     } catch {
       await load();
     } finally {
+      setToggling((current) => {
+        const next = { ...current };
+        for (const id of ids) delete next[id];
+        return next;
+      });
+    }
+  }
+
+  async function bulkAutoEnrich() {
+    if (selectedIds.length === 0) return;
+
+    const ids = [...selectedIds];
+    const confirmed = window.confirm(
+      `Preencher automaticamente categoria, descricao e capa nos ${ids.length} produto(s) selecionado(s)?\n\nSo vamos completar o que estiver faltando.`,
+    );
+    if (!confirmed) return;
+
+    setBulkEnriching(true);
+    setToggling((current) => {
+      const next = { ...current };
+      for (const id of ids) next[id] = true;
+      return next;
+    });
+
+    try {
+      const res = await fetch("/api/admin/products/enrich", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        cache: "no-store",
+        body: JSON.stringify({ ids }),
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (res.status === 401) {
+        window.location.href = "/admin/login";
+        return;
+      }
+
+      if (!res.ok || !data?.ok) {
+        showToast({
+          title: "Nao foi possivel preencher",
+          message: data?.error || "Falha ao aplicar sugestoes em lote.",
+          tone: "danger",
+        });
+        await load();
+        return;
+      }
+
+      await load();
+      setSelectedIds([]);
+      showToast({
+        title: "Sugestoes aplicadas",
+        message: `${Number(data.processed ?? 0)} produtos processados, ${Number(data.categoriesFilled ?? 0)} com categoria, ${Number(data.descriptionsFilled ?? 0)} com descricao e ${Number(data.imagesFilled ?? 0)} com capa.`,
+        tone: "success",
+      });
+    } catch {
+      await load();
+      showToast({
+        title: "Erro de rede",
+        message: "Nao conseguimos aplicar as sugestoes em lote agora.",
+        tone: "danger",
+      });
+    } finally {
+      setBulkEnriching(false);
       setToggling((current) => {
         const next = { ...current };
         for (const id of ids) delete next[id];
@@ -1174,6 +1240,15 @@ export default function AdminProductsClient() {
                   className="rounded-full border border-felicio-lilac/20 bg-felicio-lilac/12 px-3 py-1.5 text-[11px] font-semibold text-felicio-ink/75 transition disabled:opacity-50"
                 >
                   Aplicar categoria
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => void bulkAutoEnrich()}
+                  disabled={selectedCount === 0 || bulkEnriching}
+                  className="rounded-full border border-felicio-sun/25 bg-felicio-sun/15 px-3 py-1.5 text-[11px] font-semibold text-felicio-ink/75 transition disabled:opacity-50"
+                >
+                  {bulkEnriching ? "Preenchendo..." : "Auto preencher selecionados"}
                 </button>
               </div>
             )}

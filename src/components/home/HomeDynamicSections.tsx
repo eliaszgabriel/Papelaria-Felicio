@@ -4,9 +4,9 @@ import ProductCard from "@/components/product/ProductCard";
 import AnimatedProductRail from "@/components/home/AnimatedProductRail";
 import HomeCategoryStrip from "@/components/home/HomeCategoryStrip";
 import {
-  getInternalJsonFetchOptions,
-  getInternalSiteUrl,
-} from "@/lib/siteUrl";
+  getStorefrontProducts,
+  parseStorefrontProductQuery,
+} from "@/lib/storefront";
 
 export const dynamic = "force-dynamic";
 
@@ -25,25 +25,8 @@ type HomeProduct = {
   isWeeklyFavorite?: number | null;
 };
 
-type HomeProductsResponse = {
-  items: HomeProduct[];
-};
-
 async function getHomeProducts(query: string) {
-  const base = getInternalSiteUrl();
-  const res = await fetch(
-    `${base}/api/products?${query}`,
-    getInternalJsonFetchOptions(),
-  );
-
-  if (!res.ok) return { items: [] } satisfies HomeProductsResponse;
-
-  const contentType = res.headers.get("content-type") || "";
-  if (!contentType.includes("application/json")) {
-    return { items: [] } satisfies HomeProductsResponse;
-  }
-
-  return (await res.json()) as HomeProductsResponse;
+  return getStorefrontProducts(parseStorefrontProductQuery(query));
 }
 
 function mapToCard(p: HomeProduct) {

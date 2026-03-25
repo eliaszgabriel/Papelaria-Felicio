@@ -1,62 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import ProductDetailShell from "./_ui/ProductDetailShell";
-import {
-  getInternalJsonFetchOptions,
-  getInternalSiteUrl,
-  getSiteUrl,
-} from "@/lib/siteUrl";
+import { getSiteUrl } from "@/lib/siteUrl";
+import { getStorefrontProductBySlug } from "@/lib/storefront";
 
 export const dynamic = "force-dynamic";
-
-type ProductImage = {
-  url: string;
-  sortOrder?: number | null;
-};
-
-type ProductColorOption = {
-  id: string;
-  name: string;
-  imageUrl: string;
-  includeInGallery?: boolean;
-};
-
-type ProductResponse = {
-  product?: {
-    id: string | number;
-    slug: string;
-    name: string;
-    shortDescription?: string | null;
-    price: number;
-    compareAtPrice?: number | null;
-    description?: string | null;
-    coverImage?: string | null;
-    stock?: number | null;
-    images?: ProductImage[];
-    colorOptions?: ProductColorOption[];
-    isCollection?: number | null;
-    isWeeklyFavorite?: number | null;
-  };
-};
-
-async function getProduct(slug: string): Promise<ProductResponse | null> {
-  const base = getInternalSiteUrl();
-  const res = await fetch(
-    `${base}/api/products/${encodeURIComponent(slug)}`,
-    getInternalJsonFetchOptions(),
-  );
-
-  if (!res.ok) {
-    return null;
-  }
-
-  const contentType = res.headers.get("content-type") || "";
-  if (!contentType.includes("application/json")) {
-    return null;
-  }
-
-  return (await res.json()) as ProductResponse;
-}
 
 export async function generateMetadata({
   params,
@@ -64,8 +12,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const data = await getProduct(slug);
-  const product = data?.product;
+  const product = await getStorefrontProductBySlug(slug);
 
   if (!product) {
     return {
@@ -109,8 +56,7 @@ export default async function ProdutoSlugPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const data = await getProduct(slug);
-  const product = data?.product;
+  const product = await getStorefrontProductBySlug(slug);
 
   if (!product) {
     return (

@@ -1,16 +1,10 @@
 import Link from "next/link";
 import Image from "next/image";
-import { getInternalJsonFetchOptions, getInternalSiteUrl } from "@/lib/siteUrl";
 import { getCategoryShowcaseImage } from "@/lib/categoryShowcase";
-
-type Category = {
-  id: string | number;
-  name: string;
-};
-
-type CategoriesResponse = {
-  items: Category[];
-};
+import {
+  getStorefrontCategories,
+  type StorefrontCategory,
+} from "@/lib/storefront";
 
 const FEATURED_CATEGORY_IDS = [
   "mochilas",
@@ -20,32 +14,18 @@ const FEATURED_CATEGORY_IDS = [
   "escritorio",
 ] as const;
 
-async function getCategories() {
-  const base = getInternalSiteUrl();
-  const res = await fetch(`${base}/api/categories`, getInternalJsonFetchOptions());
-  if (!res.ok) return { items: [] } satisfies CategoriesResponse;
-  const contentType = res.headers.get("content-type") || "";
-  if (!contentType.includes("application/json")) {
-    return { items: [] } satisfies CategoriesResponse;
-  }
-  return (await res.json()) as CategoriesResponse;
-}
-
 export default async function HomeCategoryStrip() {
-  const categoriesResponse = await getCategories();
-  const allCategories = Array.isArray(categoriesResponse.items)
-    ? categoriesResponse.items
-    : [];
+  const allCategories = await getStorefrontCategories();
   const categories = FEATURED_CATEGORY_IDS.map((categoryId) =>
     allCategories.find((category) => String(category.id) === categoryId),
-  ).filter((category): category is Category => Boolean(category));
+  ).filter((category): category is StorefrontCategory => Boolean(category));
 
   if (!categories.length) return null;
 
   const categoriesWithImage = await Promise.all(
     categories.map(async (category) => ({
       ...category,
-      image: getCategoryShowcaseImage(String(category.id)),
+      image: getCategoryShowcaseImage(category.id) || null,
     })),
   );
 

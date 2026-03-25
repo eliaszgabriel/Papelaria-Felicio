@@ -1,7 +1,11 @@
 import Link from "next/link";
 import Container from "@/components/layout/Container";
 import ProductCard from "./ProductCard";
-import { getInternalJsonFetchOptions, getInternalSiteUrl } from "@/lib/siteUrl";
+import {
+  getStorefrontProducts,
+  parseStorefrontProductQuery,
+  type StorefrontProductListItem,
+} from "@/lib/storefront";
 
 export const dynamic = "force-dynamic";
 
@@ -13,45 +17,10 @@ type Props = {
   showCta?: boolean;
 };
 
-type ProductGridImage = {
-  url?: string;
-};
-
-type ProductGridItem = {
-  id: string | number;
-  slug: string;
-  name: string;
-  price: number;
-  compareAtPrice?: number | null;
-  coverImage?: string | null;
-  images?: ProductGridImage[];
-  stock?: number | null;
-  isCollection?: number | null;
-  isWeeklyFavorite?: number | null;
-};
-
-type ProductGridResponse = {
-  items: ProductGridItem[];
-};
-
-async function getProducts(query?: string): Promise<ProductGridResponse> {
-  const base = getInternalSiteUrl();
-  const qs = query ? `?${query}` : "";
-  const res = await fetch(
-    `${base}/api/products${qs}`,
-    getInternalJsonFetchOptions(),
-  );
-
-  if (!res.ok) {
-    return { items: [] };
-  }
-
-  const contentType = res.headers.get("content-type") || "";
-  if (!contentType.includes("application/json")) {
-    return { items: [] };
-  }
-
-  return (await res.json()) as ProductGridResponse;
+async function getProducts(
+  query?: string,
+): Promise<{ items: StorefrontProductListItem[] }> {
+  return getStorefrontProducts(parseStorefrontProductQuery(query));
 }
 
 export default async function ProductGrid({
@@ -73,7 +42,7 @@ export default async function ProductGrid({
         </div>
 
         <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {items.slice(0, limit).map((product) => (
+          {items.slice(0, limit).map((product: StorefrontProductListItem) => (
             <ProductCard
               key={product.id}
               product={{
