@@ -13,6 +13,8 @@ import {
 
 export const runtime = "nodejs";
 
+type ProductQuickView = "all" | "olist" | "missingPhoto" | "syncing" | "outOfStock";
+
 type ProductRow = {
   id: string;
   slug: string;
@@ -118,6 +120,7 @@ export async function GET(req: Request) {
   const url = new URL(req.url);
   const q = (url.searchParams.get("q") || "").trim().toLowerCase();
   const active = url.searchParams.get("active");
+  const quickView = (url.searchParams.get("quickView") || "all") as ProductQuickView;
   const id = url.searchParams.get("id");
   const page = Math.max(1, Number(url.searchParams.get("page") || 1));
   const pageSize = Math.min(
@@ -240,6 +243,22 @@ export async function GET(req: Request) {
     params.push(Number(active));
   }
 
+  if (quickView === "olist") {
+    where.push("p.externalSource = ?");
+    params.push("olist");
+  }
+  if (quickView === "missingPhoto") {
+    where.push(
+      `(SELECT COUNT(1) FROM product_images i WHERE i.productId = p.id) = 0`,
+    );
+  }
+  if (quickView === "syncing") {
+    where.push("(p.syncStock = 1 OR p.syncPrice = 1)");
+  }
+  if (quickView === "outOfStock") {
+    where.push("COALESCE(p.stock, 0) <= 0");
+  }
+
   let stats: ProductStatsRow = {
     total: 0,
     onCount: 0,
@@ -267,6 +286,23 @@ export async function GET(req: Request) {
       wherePg.push(`p.active = $${paramIndex}`);
       paramsPg.push(Number(active));
       paramIndex += 1;
+    }
+
+    if (quickView === "olist") {
+      wherePg.push(`p.externalsource = $${paramIndex}`);
+      paramsPg.push("olist");
+      paramIndex += 1;
+    }
+    if (quickView === "missingPhoto") {
+      wherePg.push(
+        `(SELECT COUNT(1) FROM product_images i WHERE i.productid = p.id) = 0`,
+      );
+    }
+    if (quickView === "syncing") {
+      wherePg.push("(p.syncstock = 1 OR p.syncprice = 1)");
+    }
+    if (quickView === "outOfStock") {
+      wherePg.push("COALESCE(p.stock, 0) <= 0");
     }
 
     const whereClause = wherePg.length ? `WHERE ${wherePg.join(" AND ")}` : "";

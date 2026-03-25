@@ -270,6 +270,7 @@ export default function AdminProductsClient() {
     const url = new URL(window.location.origin + "/api/admin/products");
     if (q.trim()) url.searchParams.set("q", q.trim());
     if (active) url.searchParams.set("active", active);
+    if (quickView !== "all") url.searchParams.set("quickView", quickView);
     url.searchParams.set("page", String(nextPage));
     url.searchParams.set("pageSize", String(pagination.pageSize));
 
@@ -354,6 +355,11 @@ export default function AdminProductsClient() {
   }, []);
 
   useEffect(() => {
+    void load(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [quickView]);
+
+  useEffect(() => {
     try {
       const raw = window.localStorage.getItem(OLIST_CURSOR_STORAGE_KEY);
       if (!raw) return;
@@ -393,17 +399,7 @@ export default function AdminProductsClient() {
   }, []);
 
   const sorted = useMemo(() => {
-    const filtered = items.filter((product) => {
-      if (quickView === "olist") return product.externalSource === "olist";
-      if (quickView === "missingPhoto") return Number(product.imageCount ?? 0) === 0;
-      if (quickView === "syncing") {
-        return Number(product.syncStock ?? 0) === 1 || Number(product.syncPrice ?? 0) === 1;
-      }
-      if (quickView === "outOfStock") return Number(product.stock ?? 0) <= 0;
-      return true;
-    });
-
-    const next = [...filtered];
+    const next = [...items];
     next.sort((left, right) => {
       if (sort === "new") return right.createdAt - left.createdAt;
       if (sort === "old") return left.createdAt - right.createdAt;
@@ -411,7 +407,7 @@ export default function AdminProductsClient() {
       return left.price - right.price;
     });
     return next;
-  }, [items, quickView, sort]);
+  }, [items, sort]);
 
   const selectedCount = selectedIds.length;
 
@@ -1448,7 +1444,9 @@ export default function AdminProductsClient() {
                             <button
                               key={option.id}
                               type="button"
-                              onClick={() => setQuickView(option.id as ProductQuickView)}
+                              onClick={() =>
+                                setQuickView(option.id as ProductQuickView)
+                              }
                               className={[
                                 "rounded-full border px-3 py-1.5 text-[11px] font-semibold transition",
                                 isActive
