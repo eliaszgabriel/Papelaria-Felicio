@@ -171,7 +171,7 @@ export default function ProductCard({
           {product.title}
         </h3>
 
-        <div className="mt-auto flex items-end justify-between gap-2 pt-2 sm:gap-3 sm:pt-3">
+        <div className="mt-2 flex items-end justify-between gap-2 sm:mt-3 sm:gap-3">
           <div className="min-w-0 flex-1">
             <div
               className={
