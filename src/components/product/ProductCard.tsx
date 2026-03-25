@@ -65,7 +65,7 @@ export default function ProductCard({
   return (
     <article
       className="
-        group relative overflow-hidden
+        group relative flex h-full flex-col overflow-hidden
         rounded-[2rem] border border-white/70
         bg-[linear-gradient(180deg,rgba(255,255,255,0.92),rgba(255,255,255,0.72))]
         backdrop-blur-xl
@@ -142,24 +142,28 @@ export default function ProductCard({
       <div
         className={
           compact
-            ? "px-2.5 pb-3.5 sm:px-[18px] sm:pb-[18px]"
-            : "px-6 pb-6"
+            ? "flex flex-1 flex-col px-2.5 pb-3.5 sm:px-[18px] sm:pb-[18px]"
+            : "flex flex-1 flex-col px-6 pb-6"
         }
       >
-        {badges.length > 0 && (
-          <div className="mb-1.5 flex flex-wrap items-center gap-1 text-[9px] font-extrabold uppercase tracking-[0.14em] text-felicio-ink/45 sm:mb-3 sm:gap-2 sm:text-[11px] sm:tracking-[0.18em]">
-            {badges.map((badge) => (
+        <div
+          className={[
+            "flex flex-wrap items-center gap-1 text-[9px] font-extrabold uppercase tracking-[0.14em] text-felicio-ink/45 sm:gap-2 sm:text-[11px] sm:tracking-[0.18em]",
+            compact ? "mb-1.5 min-h-[1.65rem] sm:mb-3 sm:min-h-[2rem]" : "mb-3 min-h-[2rem]",
+          ].join(" ")}
+        >
+          {badges.length > 0 &&
+            badges.map((badge) => (
               <span key={badge} className="rounded-full bg-white/85 px-2 py-1">
                 {badge}
               </span>
             ))}
-          </div>
-        )}
+        </div>
 
         <h3
           className={
             compact
-              ? "min-h-[3.9rem] text-[11px] font-extrabold leading-snug text-felicio-ink sm:min-h-[unset] sm:text-[15px]"
+              ? "min-h-[4.65rem] text-[11px] font-extrabold leading-snug text-felicio-ink sm:min-h-[5rem] sm:text-[15px]"
               : "text-base font-extrabold leading-snug text-felicio-ink"
           }
           style={titleClampStyle}
@@ -167,7 +171,7 @@ export default function ProductCard({
           {product.title}
         </h3>
 
-        <div className="mt-2 flex items-end justify-between gap-2 sm:mt-3 sm:gap-3">
+        <div className="mt-auto flex items-end justify-between gap-2 pt-2 sm:gap-3 sm:pt-3">
           <div className="min-w-0 flex-1">
             <div
               className={

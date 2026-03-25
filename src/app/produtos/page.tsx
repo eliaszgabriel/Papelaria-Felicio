@@ -431,7 +431,7 @@ export default async function ProdutosPage({
   const color = String(resolvedSearchParams?.color ?? "");
   const page = Math.max(Number(resolvedSearchParams?.page ?? 1), 1);
 
-  const pageSize = 8;
+  const pageSize = 9;
   const offset = (page - 1) * pageSize;
 
   const [categories, categoryCounts, prod, filterUniverse, allProductsResponse] =

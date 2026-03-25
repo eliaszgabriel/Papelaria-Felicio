@@ -40,7 +40,7 @@ export default function ProdutosLoading() {
             </div>
 
             <div className="mt-6 grid grid-cols-2 gap-3 sm:gap-5 xl:grid-cols-3">
-              {Array.from({ length: 8 }).map((_, index) => (
+              {Array.from({ length: 9 }).map((_, index) => (
                 <CardSkeleton key={index} />
               ))}
             </div>
